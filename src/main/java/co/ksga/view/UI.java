@@ -51,19 +51,17 @@ public class UI {
             // table total record
             table.addCell("TOTAL RECORD " + products.size(), new CellStyle(CellStyle.HorizontalAlign.CENTER), 3);
 
-
             System.out.println(table.render());
 
-//            System.out.println("Page " + (currentPage + 1) + " / " + totalPages);
+            Table table2 = new Table(5, BorderStyle.UNICODE_BOX_HEAVY_BORDER, ShownBorders.ALL);
 
-            Table table2 = new Table(4, BorderStyle.UNICODE_BOX_HEAVY_BORDER, ShownBorders.ALL);
-
-            table2.addCell(" MENU " , new CellStyle(CellStyle.HorizontalAlign.CENTER), 4);
+            table2.addCell(" MENU " , new CellStyle(CellStyle.HorizontalAlign.CENTER), 5);
             table2.addCell("[F] First Page" , new CellStyle(CellStyle.HorizontalAlign.CENTER));
             table2.addCell("[N] Next Page", new CellStyle(CellStyle.HorizontalAlign.CENTER));
             table2.addCell("[P] Previous Page", new CellStyle(CellStyle.HorizontalAlign.CENTER));
             table2.addCell("[L] Last Page" , new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table2.addCell("[G] Exit" , new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table2.addCell("[G] GOTO" , new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table2.addCell("[E] Exit" , new CellStyle(CellStyle.HorizontalAlign.CENTER));
             table2.addCell("[W] Write" , new CellStyle(CellStyle.HorizontalAlign.CENTER));
             table2.addCell("[R] Read (id)" , new CellStyle(CellStyle.HorizontalAlign.CENTER));
             table2.addCell("[U] Update" , new CellStyle(CellStyle.HorizontalAlign.CENTER));
@@ -76,7 +74,7 @@ public class UI {
             table2.addCell("[Re] Restore" , new CellStyle(CellStyle.HorizontalAlign.CENTER));
             table2.addCell("[E] Exit" , new CellStyle(CellStyle.HorizontalAlign.CENTER));
 
-            for (int i = 0; i < 4; i++){
+            for (int i = 0; i < 5; i++){
                 table2.setColumnWidth(i, 30,50);
             }
 
@@ -104,6 +102,19 @@ public class UI {
                     currentPage = totalPages - 1;
                     break;
                 case "g":
+                    System.out.print("Enter the page number you want to go to: ");
+                    String inputPage = sc.nextLine().trim();
+                    try {
+                        int pageNumber = Integer.parseInt(inputPage);
+                        if (pageNumber >= 1 && pageNumber <= totalPages) {
+                            currentPage = pageNumber - 1;
+                        } else {
+                            System.out.println("❌ Invalid page number. Please enter a number between 1 and " + totalPages + ".");
+                        }
+                    } catch (NumberFormatException e) {
+                        System.out.println("❌ Invalid input. Please enter a valid page number.");
+                    }
+                    break;
                 case "e":
                     System.out.print("\n\uD83E\uDD14 Are you sure you want to exit? (Y/N): ");
                     String confirmExit = sc.nextLine();

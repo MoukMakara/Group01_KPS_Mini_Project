@@ -1,6 +1,10 @@
 package co.ksga;
 
+import co.ksga.model.entity.Product;
+import co.ksga.model.service.ProductServiceImpl;
 import co.ksga.view.UI;
+
+import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
@@ -17,5 +21,7 @@ public class Main {
         System.out.println(cyanBold +" ".repeat(50) +"Center Of Science and Technology Advanced Development-CSTAD"+reset);
 
         UI.home();
+
     }
+
 }

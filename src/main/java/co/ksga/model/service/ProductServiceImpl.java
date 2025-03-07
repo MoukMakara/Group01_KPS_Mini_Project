@@ -6,6 +6,7 @@ import co.ksga.model.entity.Product;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Scanner;
 
 public class ProductServiceImpl implements ProductService{
 
@@ -46,6 +47,9 @@ public class ProductServiceImpl implements ProductService{
 
     @Override
     public Product saveProduct(Product product) {
+        Scanner sc = new Scanner(System.in);
+        String option;
+
         return null;
     }
 

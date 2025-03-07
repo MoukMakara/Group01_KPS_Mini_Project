@@ -7,6 +7,8 @@ import org.nocrala.tools.texttablefmt.CellStyle;
 import org.nocrala.tools.texttablefmt.ShownBorders;
 import org.nocrala.tools.texttablefmt.Table;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class UI {
@@ -26,6 +28,10 @@ public class UI {
         }
         System.out.println(table.render());
     }
+
+
+
+
     public static void switchProcess(){
 
         Scanner scanner = new Scanner(System.in);

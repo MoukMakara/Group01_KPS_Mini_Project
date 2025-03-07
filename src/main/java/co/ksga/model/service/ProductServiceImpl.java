@@ -2,9 +2,14 @@ package co.ksga.model.service;
 
 
 import co.ksga.model.entity.Product;
+import co.ksga.utils.DBConnection;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -17,7 +22,29 @@ public class ProductServiceImpl implements ProductService{
 
     @Override
     public List<Product> readAllProducts() {
-        return List.of();
+        List<Product> products = new ArrayList<>();
+        String sql = """
+                SELECT * FROM product
+                """;
+        try(
+                Connection connection = DBConnection.getConnection();
+                Statement statement = connection.createStatement();
+                ResultSet resultSet = statement.executeQuery(sql);
+        ) {
+            while (resultSet.next()){
+                Product product = new Product();
+                product.setId(resultSet.getInt("id"));
+                product.setName(resultSet.getString("name"));
+                product.setUnitPrice(resultSet.getDouble("unit_price"));
+                product.setQuantity(resultSet.getInt("quantity"));
+                product.setImportedDate(resultSet.getDate("imported_date").toLocalDate());
+                products.add(product);
+            }
+
+        }catch (SQLException sqlException){
+            System.out.println("cannot get data " + sqlException.getSQLState());
+        }
+        return products;
     }
 
     @Override

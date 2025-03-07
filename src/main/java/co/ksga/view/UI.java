@@ -136,6 +136,7 @@ public class UI {
                 case "u":
                     // Update Operation (Try)
 
+                    productController.updateProduct(new Product(),1);
                     break;
                 case "d":
                     // Delete Operation (Seyha)

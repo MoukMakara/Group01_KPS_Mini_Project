@@ -1,6 +1,10 @@
 package co.ksga;
 
+import co.ksga.model.entity.Product;
+import co.ksga.model.service.ProductServiceImpl;
 import co.ksga.view.UI;
+
+import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
@@ -15,7 +19,9 @@ public class Main {
         System.out.println(cyanBold +" ".repeat(12) +"╚══════╝   ╚═╝    ╚═════╝  ╚═════╝╚═╝  ╚═╝    ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═══╝   ╚═╝  ");
         System.out.println(cyanBold +" ".repeat(57) +"មជ្ឈមណ្ឌលអភិវឌ្ឍន៍វិទ្យាសាស្រ្ត និង បច្ចេកទេសវិទ្យាកម្រិតខ្ពស់");
         System.out.println(cyanBold +" ".repeat(50) +"Center Of Science and Technology Advanced Development-CSTAD"+reset);
-
+        // makara
         UI.home();
+
     }
+
 }

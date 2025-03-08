@@ -133,17 +133,20 @@ public class UI {
                     currentPage = totalPages - 1;
                     break;
                 case "g":
-                    System.out.print("Enter the page number you want to go to: ");
-                    String inputPage = sc.nextLine().trim();
-                    try {
-                        int pageNumber = Integer.parseInt(inputPage);
-                        if (pageNumber >= 1 && pageNumber <= totalPages) {
-                            currentPage = pageNumber - 1;
-                        } else {
-                            System.out.println("Invalid page number. Please enter a number between 1 and " + totalPages + ".");
+                    while (true) {
+                        System.out.print("Enter the page number you want to go to: ");
+                        String inputPage = sc.nextLine().trim();
+                        try {
+                            int pageNumber = Integer.parseInt(inputPage);
+                            if (pageNumber >= 1 && pageNumber <= totalPages) {
+                                currentPage = pageNumber - 1;
+                                break;
+                            } else {
+                                System.out.println("Invalid page number. Please enter a number between 1 and " + totalPages + ".");
+                            }
+                        } catch (NumberFormatException e) {
+                            System.out.println("Invalid input. Please enter a valid page number.");
                         }
-                    } catch (NumberFormatException e) {
-                        System.out.println("Invalid input. Please enter a valid page number.");
                     }
                     break;
                 case "e":

@@ -13,7 +13,6 @@ import java.util.Date;
 import java.util.List;
 
 public class ProductServiceImpl implements ProductService {
-
     static Scanner sc = new Scanner(System.in);
 
     @Override

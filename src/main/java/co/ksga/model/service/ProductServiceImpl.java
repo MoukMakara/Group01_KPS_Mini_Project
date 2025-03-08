@@ -4,50 +4,21 @@ package co.ksga.model.service;
 import co.ksga.exceptions.NotFoundException;
 import co.ksga.model.entity.Product;
 import co.ksga.utils.DBConnection;
-import co.ksga.utils.ProductValidation;
 
+import java.util.Scanner;
 import java.io.IOException;
 import java.sql.*;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Scanner;
 
 public class ProductServiceImpl implements ProductService {
+
     static Scanner sc = new Scanner(System.in);
-    ArrayList<Product> productUpdate = new ArrayList<>();
-    ArrayList<Product> productInsert = new ArrayList<>();
 
     @Override
     public void writeProducts(Product product) {
-        ArrayList<Product> productTemp = new ArrayList<>();
-        String sql = """
-                SELECT COUNT(*) AS total FROM products
-                """;
-        int id = 0;
-        try (
-                Connection connection = DBConnection.getConnection();
-                Statement statement = connection.createStatement();
-                ResultSet resultSet = statement.executeQuery(sql);
-        ) {
-            if (resultSet.next()) {
-                id = resultSet.getInt("total") + 1;
-            }
-            System.out.println("ID: " + id);
-            String name = ProductValidation.productNameValidation("ProductName");
-            String price = ProductValidation.productPriceValidation("Price");
-            double finalprice = Double.parseDouble(price);
-            String quantity = ProductValidation.productPriceValidation("Quantity");
-            int finalquantity = Integer.parseInt(quantity);
-            LocalDate currentDate = LocalDate.now();
-            System.out.println("Enter to continue......");
-            sc.nextLine();
-            Product temp = new Product(id, name, finalprice, finalquantity, currentDate);
-            unsavedProduct(temp,"add");
-        } catch (SQLException sqlException) {
-            System.out.println("cannot get data " + sqlException.getSQLState());
-        }
+
     }
 
     @Override
@@ -56,7 +27,7 @@ public class ProductServiceImpl implements ProductService {
         String sql = """
                 SELECT * FROM products
                 """;
-        try (
+        try(
                 Connection connection = DBConnection.getConnection();
                 Statement statement = connection.createStatement();
                 ResultSet resultSet = statement.executeQuery(sql);
@@ -71,7 +42,7 @@ public class ProductServiceImpl implements ProductService {
                 products.add(product);
             }
 
-        } catch (SQLException sqlException) {
+        }catch (SQLException sqlException){
             System.out.println("cannot get data " + sqlException.getSQLState());
         }
         return products;
@@ -106,7 +77,8 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public void updateProduct(Product product) {
-        int id = ProductValidation.idValidation("ID");
+        ArrayList<Product> tepProducts = new ArrayList<>();
+        int id =10;
         String sql = "SELECT * FROM products WHERE id = " + id;
         try {
             Connection connection = DBConnection.getConnection();
@@ -117,11 +89,9 @@ public class ProductServiceImpl implements ProductService {
                 System.out.println("Unit Price : " + resultSet.getDouble("unit_price"));
                 System.out.println("Quantity : " + resultSet.getInt("quantity"));
                 System.out.println("Imported Date : " + resultSet.getDate("imported_date").toLocalDate());
-                product.setId(resultSet.getInt("id"));
                 product.setName(resultSet.getString("Name"));
                 product.setUnitPrice(resultSet.getDouble("unit_price"));
                 product.setQuantity(resultSet.getInt("quantity"));
-                product.setImportedDate(resultSet.getDate("imported_date").toLocalDate());
             }
             int option;
             while (true) {
@@ -157,19 +127,17 @@ public class ProductServiceImpl implements ProductService {
                 System.out.print("Do you want to continue? (Y/N): ");
                 String response = sc.next().toUpperCase();
                 if (response.equals("N")) {
-                    System.out.println("Product id : " + product.getId());
+                    System.out.println("Product details: ");
                     System.out.println("Name: " + product.getName());
                     System.out.println("Unit Price: " + product.getUnitPrice());
                     System.out.println("Quantity: " + product.getQuantity());
-                    System.out.println("Imported Date: " + product.getImportedDate());
-                    unsavedProduct(product, "Update");
                     break;
                 }
-                // add into unsavedProduct
             }
         } catch (SQLException sqlException) {
             System.out.println("cannot get data " + sqlException.getSQLState());
         }
+
 
     }
 
@@ -178,13 +146,17 @@ public class ProductServiceImpl implements ProductService {
         return 0;
     }
 
+
+
+
+
     public List<Product> searchProductsByName(String name) {
         List<Product> productList = new ArrayList<>();
 
         try {
             Connection con = DBConnection.getConnection();
 
-            String sql = "select * from products where name like '%" + name + "%'";
+            String sql = "select * from products where name like '%"+name+"%'";
             PreparedStatement ps = con.prepareStatement(sql);
 
             ResultSet rs = ps.executeQuery();
@@ -202,8 +174,7 @@ public class ProductServiceImpl implements ProductService {
                     product.setImportedDate(((java.sql.Date) sqlDate).toLocalDate());
                 } else {
                     product.setImportedDate(null); // Handle null dates if necessary
-                }
-                productList.add(product);
+                }productList.add(product);
             }
 
             rs.close();
@@ -257,51 +228,15 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
+    @Override
+    public void saveProduct(String operation) {
+
+    }
 
     @Override
     public void unsavedProduct(Product products, String operation) {
-        if (operation.equals("add")) {
-            productInsert.add(products);  // Changed to addAll since we're adding a list
-        } else if (operation.equals("update")) {
-            productUpdate.add(products);
-        }
-    }
-
-    @Override
-    public void saveProduct(String operation) {
-        LocalDate currentDate = LocalDate.now();
-        if (operation == "update") {
-            String sqlUpdate = "UPDATE products SET name = ?, unit_price = ?, quantity = ? WHERE id = ?";
-            try (Connection connection = DBConnection.getConnection();
-                 PreparedStatement preparedStatement = connection.prepareStatement(sqlUpdate)) {
-                for (Product productUpdate : productUpdate) {
-                    preparedStatement.setString(1, productUpdate.getName());
-                    preparedStatement.setDouble(2, productUpdate.getUnitPrice());
-                    preparedStatement.setInt(3, productUpdate.getQuantity());
-                    preparedStatement.setInt(4, productUpdate.getId());
-                    preparedStatement.execute();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace(); // Handle properly in production code
-            }
-        } else {
-            String sqlInsert = "INSERT INTO products (name, unit_price, quantity) VALUES (?, ?, ?)";
-            try (Connection connection = DBConnection.getConnection();
-                 PreparedStatement preparedStatement = connection.prepareStatement(sqlInsert)) {
-                for (Product productInsert : productInsert) {
-                    preparedStatement.setString(1, productInsert.getName());
-                    preparedStatement.setDouble(2, productInsert.getUnitPrice());
-                    preparedStatement.setInt(3, productInsert.getQuantity());
-                    preparedStatement.execute();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace(); // Handle properly in production code
-            }
-        }
-    }
 
     }
-
     @Override
     public boolean backupProducts(String fileName) throws IOException, SQLException {
         return false;
@@ -311,5 +246,4 @@ public class ProductServiceImpl implements ProductService {
     public boolean restoreProducts(String fileName) throws IOException, SQLException {
         return false;
     }
-
 }

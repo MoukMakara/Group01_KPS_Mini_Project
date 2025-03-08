@@ -4,6 +4,7 @@ package co.ksga.model.service;
 import co.ksga.exceptions.NotFoundException;
 import co.ksga.model.entity.Product;
 import co.ksga.utils.DBConnection;
+import co.ksga.utils.ProductValidation;
 import co.ksga.view.BoxBorder;
 import co.ksga.view.UI;
 
@@ -21,11 +22,42 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class ProductServiceImpl implements ProductService {
+    ArrayList<Product> productUpdate = new ArrayList<>();
+    ArrayList<Product> productInsert = new ArrayList<>();
+
 
     static Scanner sc = new Scanner(System.in);
 
     @Override
     public void writeProducts(Product product) {
+        String sql = """
+                SELECT COUNT(*) AS total FROM products
+                """;
+        int id = 0;
+        try (
+                Connection connection = DBConnection.getConnection();
+                Statement statement = connection.createStatement();
+                ResultSet resultSet = statement.executeQuery(sql);
+        ) {
+            if (resultSet.next()) {
+                id = resultSet.getInt("total");
+            }
+            id = id + 1;
+            System.out.println("ID: " + id);
+            String name = ProductValidation.productNameValidation("ProductName");
+            String price = ProductValidation.productPriceValidation("Price");
+            double finalprice = Double.parseDouble(price);
+            String quantity = ProductValidation.productPriceValidation("Quantity");
+            int finalquantity = Integer.parseInt(quantity);
+            LocalDate currentDate = LocalDate.now();
+            System.out.println("Enter to continue......");
+            sc.nextLine();
+            Product temp = new Product(id,name,finalprice,finalquantity,currentDate);
+            id++;
+            unsavedProduct(temp,"add");
+        } catch (SQLException sqlException) {
+            System.out.println("cannot get data " + sqlException.getSQLState());
+        }
 
     }
 
@@ -35,7 +67,7 @@ public class ProductServiceImpl implements ProductService {
         String sql = """
                 SELECT * FROM products
                 """;
-        try(
+        try (
                 Connection connection = DBConnection.getConnection();
                 Statement statement = connection.createStatement();
                 ResultSet resultSet = statement.executeQuery(sql);
@@ -50,7 +82,7 @@ public class ProductServiceImpl implements ProductService {
                 products.add(product);
             }
 
-        }catch (SQLException sqlException){
+        } catch (SQLException sqlException) {
             System.out.println("cannot get data " + sqlException.getSQLState());
         }
         return products;
@@ -81,7 +113,7 @@ public class ProductServiceImpl implements ProductService {
                     product.setImportedDate(resultSet.getDate("imported_date").toLocalDate());
                 } else {
                     // Product not found
-                   throw new NotFoundException(BoxBorder.red+"not found product with id " + BoxBorder.reset+id);
+                    throw new NotFoundException(BoxBorder.red + "not found product with id " + BoxBorder.reset + id);
                 }
             }
         } catch (SQLException e) {
@@ -95,7 +127,9 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public void updateProduct(Product product) {
         ArrayList<Product> tepProducts = new ArrayList<>();
-        int id =10;
+        int id;
+        System.out.println("Enter ID : ");
+        id = sc.nextInt();
         String sql = "SELECT * FROM products WHERE id = " + id;
         try {
             Connection connection = DBConnection.getConnection();
@@ -218,65 +252,63 @@ public class ProductServiceImpl implements ProductService {
     }
 
 
-
-
-@Override
-public List<Product> searchProductsByName(String name) throws SQLException {
-    List<Product> productList = new ArrayList<>();
-    Connection con = null;
-    PreparedStatement ps = null;
-    ResultSet rs = null;
-    try {
-        con = DBConnection.getConnection();
-        if (con == null) {
-            throw new SQLException("Failed to establish database connection");
-        }
-        String sql = "SELECT * FROM products WHERE name LIKE ?";
-        ps = con.prepareStatement(sql);
-
-        //  (to prevent SQL injection)
-        ps.setString(1, "%" + name + "%");
-
-        rs = ps.executeQuery();
-
-        if (!rs.isBeforeFirst()) {
-            throw new NotFoundException(BoxBorder.red+"Product not found with name: "+BoxBorder.reset + name);
-        }
-        while (rs.next()) {
-            Product product = new Product();
-            product.setId(rs.getInt("id"));
-            product.setName(rs.getString("name"));
-            product.setUnitPrice(rs.getDouble("unit_price"));
-            product.setQuantity(rs.getInt("quantity"));
-
-            Date sqlDate = rs.getDate("imported_date");
-            if (sqlDate != null) {
-                product.setImportedDate(sqlDate.toLocalDate());
-            } else {
-                product.setImportedDate(null);
+    @Override
+    public List<Product> searchProductsByName(String name) throws SQLException {
+        List<Product> productList = new ArrayList<>();
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            con = DBConnection.getConnection();
+            if (con == null) {
+                throw new SQLException("Failed to establish database connection");
             }
-            System.out.println("ID : " + product.getId());
-            System.out.println("Product Name: " + product.getName());
-            System.out.println("Product Price: " + product.getUnitPrice());
-            System.out.println("Product Quantity: " + product.getQuantity());
-            System.out.println("Product Date: " + product.getImportedDate());
-            productList.add(product);
-        }
+            String sql = "SELECT * FROM products WHERE name LIKE ?";
+            ps = con.prepareStatement(sql);
 
-        if (productList.isEmpty()) {
-            throw new NotFoundException("No products found with name: " + name);
-        }
-    } catch (SQLException | RuntimeException e) {
-        System.out.println("Error occurred: " + e.getMessage());
-    } finally {
+            //  (to prevent SQL injection)
+            ps.setString(1, "%" + name + "%");
 
-        assert rs != null;
-        rs.close();
-        ps.close();
-        con.close();
+            rs = ps.executeQuery();
+
+            if (!rs.isBeforeFirst()) {
+                throw new NotFoundException(BoxBorder.red + "Product not found with name: " + BoxBorder.reset + name);
+            }
+            while (rs.next()) {
+                Product product = new Product();
+                product.setId(rs.getInt("id"));
+                product.setName(rs.getString("name"));
+                product.setUnitPrice(rs.getDouble("unit_price"));
+                product.setQuantity(rs.getInt("quantity"));
+
+                Date sqlDate = rs.getDate("imported_date");
+                if (sqlDate != null) {
+                    product.setImportedDate(sqlDate.toLocalDate());
+                } else {
+                    product.setImportedDate(null);
+                }
+                System.out.println("ID : " + product.getId());
+                System.out.println("Product Name: " + product.getName());
+                System.out.println("Product Price: " + product.getUnitPrice());
+                System.out.println("Product Quantity: " + product.getQuantity());
+                System.out.println("Product Date: " + product.getImportedDate());
+                productList.add(product);
+            }
+
+            if (productList.isEmpty()) {
+                throw new NotFoundException("No products found with name: " + name);
+            }
+        } catch (SQLException | RuntimeException e) {
+            System.out.println("Error occurred: " + e.getMessage());
+        } finally {
+
+            assert rs != null;
+            rs.close();
+            ps.close();
+            con.close();
+        }
+        return productList;
     }
-    return productList;
-}
 
 
     @Override
@@ -328,13 +360,48 @@ public List<Product> searchProductsByName(String name) throws SQLException {
 
     @Override
     public void saveProduct(String operation) {
+        LocalDate currentDate = LocalDate.now();
+        if (operation.equals("update")) {
+            String sqlUpdate = "UPDATE products SET name = ?, unit_price = ?, quantity = ? WHERE id = ?";
+            try (Connection connection = DBConnection.getConnection();
+                 PreparedStatement preparedStatement = connection.prepareStatement(sqlUpdate)) {
+                for (Product productUpdate : productUpdate) {
+                    preparedStatement.setString(1, productUpdate.getName());
+                    preparedStatement.setDouble(2, productUpdate.getUnitPrice());
+                    preparedStatement.setInt(3, productUpdate.getQuantity());
+                    preparedStatement.setInt(4, productUpdate.getId());
+                    preparedStatement.execute();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace(); // Handle properly in production code
+            }
+        } else if(operation.equals("add")){
+            String sqlInsert = "INSERT INTO products (name, unit_price, quantity, imported_date) VALUES (?, ?, ?,?)";
+            try (Connection connection = DBConnection.getConnection();
+                 PreparedStatement preparedStatement = connection.prepareStatement(sqlInsert)) {
+                for (Product productInsert : productInsert) {
+                    preparedStatement.setString(1, productInsert.getName());
+                    preparedStatement.setDouble(2, productInsert.getUnitPrice());
+                    preparedStatement.setInt(3, productInsert.getQuantity());
+                    preparedStatement.setDate(4, Date.valueOf(productInsert.getImportedDate().toString()));
+                    preparedStatement.execute();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace(); // Handle properly in production code
+            }
+        }
 
     }
 
     @Override
     public void unsavedProduct(Product products, String operation) {
-
+        if (operation.equals("add")) {
+            productInsert.add(products);  // Changed to addAll since we're adding a list
+        } else if (operation.equals("update")) {
+            productUpdate.add(products);
+        }
     }
+
     @Override
     public boolean backupProducts(String backupDirectory) throws IOException, SQLException {
         String dbUser = "postgres", dbPassword = "seyha", dbName = "stockmanagement";

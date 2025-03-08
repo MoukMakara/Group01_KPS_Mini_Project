@@ -161,10 +161,9 @@ public class UI {
                 // Product Operations
                 case "w":
                     // Write Operation (Jakriya)
+                    productController.addProduct(new Product());
                     break;
                 case "r":
-                    // Read Operation (Makara)
-                    // read product by id
                     searchById();
                     break;
                 case "u":
@@ -175,8 +174,6 @@ public class UI {
                     // Delete Operation (Seyha)
                     DeleteProductByID();
                     listAllProduct();
-
-
                     break;
                 case "s":
                     // Search Operation (Seyha)

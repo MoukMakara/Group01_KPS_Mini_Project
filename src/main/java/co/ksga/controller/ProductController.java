@@ -30,12 +30,12 @@ public class ProductController {
         return productService.updateProduct(product, id);
     }
     //5. Delete Product
-    public int deleteProduct(Integer id) {
+    public String deleteProduct(Integer id) {
         return productService.deleteProduct(id);
     }
 
     //6. Search by product name
-    public List<Product> getProductByName(String name) {
+    public List<Product> getProductByName(String name) throws SQLException {
         return productService.searchProductsByName(name);
     }
     //7. Set Number of Display Row

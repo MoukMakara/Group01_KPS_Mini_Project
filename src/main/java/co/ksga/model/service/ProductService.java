@@ -21,10 +21,10 @@ public interface ProductService {
     ArrayList<Product> updateProduct(Product product, Integer id);
 
     //5. Delete Product
-    int deleteProduct(Integer id);
+    String deleteProduct(Integer id);
 
     //6. Search by product name
-    List<Product> searchProductsByName(String name);
+    List<Product> searchProductsByName(String name) throws SQLException;
 
     //7. Set Number of Display Row
     void setDisplayRow(int rows);
@@ -38,7 +38,7 @@ public interface ProductService {
     void unsavedProduct(Product product);
 
     //10. Backup
-    boolean backupProducts(String fileName) throws IOException, SQLException;
+    boolean backupProducts(String backupDirectory) throws IOException, SQLException;
 
     //11. Restore
     boolean restoreProducts(String fileName) throws IOException, SQLException;

@@ -4,13 +4,21 @@ package co.ksga.model.service;
 import co.ksga.exceptions.NotFoundException;
 import co.ksga.model.entity.Product;
 import co.ksga.utils.DBConnection;
+import co.ksga.view.BoxBorder;
+import co.ksga.view.UI;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.util.Scanner;
 import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class ProductServiceImpl implements ProductService {
 
@@ -53,23 +61,32 @@ public class ProductServiceImpl implements ProductService {
         String sql = "SELECT * FROM products WHERE id = ?";
         Product product = null;
 
-        try (Connection connection = DBConnection.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-
-            preparedStatement.setInt(1, id);
-            ResultSet resultSet = preparedStatement.executeQuery();
-
-            if (resultSet.next()) {
-                product = new Product();
-                product.setId(resultSet.getInt("id"));
-                product.setName(resultSet.getString("name"));
-                product.setUnitPrice(resultSet.getDouble("unit_price"));
-                product.setQuantity(resultSet.getInt("quantity"));
-                product.setImportedDate(resultSet.getDate("imported_date").toLocalDate());
+        try (Connection connection = DBConnection.getConnection()) {
+            if (connection == null) {
+                System.err.println("Database connection is null. Cannot fetch product.");
+                return null;
             }
 
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setInt(1, id);
+                ResultSet resultSet = preparedStatement.executeQuery();
+
+                if (resultSet.next()) {
+                    // Product found, populate the object
+                    product = new Product();
+                    product.setId(resultSet.getInt("id"));
+                    product.setName(resultSet.getString("name"));
+                    product.setUnitPrice(resultSet.getDouble("unit_price"));
+                    product.setQuantity(resultSet.getInt("quantity"));
+                    product.setImportedDate(resultSet.getDate("imported_date").toLocalDate());
+                } else {
+                    // Product not found
+                   throw new NotFoundException(BoxBorder.red+"not found product with id " + BoxBorder.reset+id);
+                }
+            }
         } catch (SQLException e) {
             e.printStackTrace(); // Handle properly in production code
+            System.err.println("Error while fetching product by ID: " + e.getMessage());
         }
 
         return product;
@@ -143,76 +160,150 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public int deleteProduct(Integer id) {
+    public String deleteProduct(Integer id) {
+        Connection con = null;
+        PreparedStatement pstm = null;
+        ResultSet rs = null;
         try {
-            Connection con = DBConnection.getConnection();
-            String sql = "delete from products where id = ?";
-            PreparedStatement ps = con.prepareStatement(sql);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+            con = DBConnection.getConnection();
+            if (con == null) {
+                throw new SQLException("Failed to establish database connection");
+            }
 
-        return 0;
-    }
+            String selectSql = "SELECT * FROM products WHERE id = ?";
+            pstm = con.prepareStatement(selectSql);
+            pstm.setInt(1, id);
+            rs = pstm.executeQuery();
 
+            if (!rs.next()) {
+                throw new NotFoundException("Product not found with ID: " + id);
+            }
+            System.out.println("Product Details:");
+            System.out.println("ID: " + rs.getInt("id"));
+            System.out.println("Name: " + rs.getString("name"));
+            System.out.println("Unit Price: " + rs.getDouble("unit_price"));
+            System.out.println("Quantity: " + rs.getInt("quantity"));
+            System.out.println("Imported Date: " + rs.getDate("imported_date"));
 
+            Scanner sc = new Scanner(System.in);
+            while (true) {
+                System.out.print("Are you sure you want to delete this product? (y/n): ");
+                String response = sc.nextLine().trim().toLowerCase();
 
-
-
-    public List<Product> searchProductsByName(String name) {
-        List<Product> productList = new ArrayList<>();
-
-        try {
-            Connection con = DBConnection.getConnection();
-
-            String sql = "select * from products where name like '%"+name+"%'";
-            PreparedStatement ps = con.prepareStatement(sql);
-
-            ResultSet rs = ps.executeQuery();
-
-            while (rs.next()) {
-                Product product = new Product();
-                product.setId(rs.getInt("id")); // Use column names for clarity
-                product.setName(rs.getString("name"));
-                product.setUnitPrice(rs.getDouble("unit_price"));
-                product.setQuantity(rs.getInt("quantity"));
-
-                // Parse the imported_date as LocalDate
-                Date sqlDate = rs.getDate("imported_date");
-                if (sqlDate != null) {
-                    product.setImportedDate(((java.sql.Date) sqlDate).toLocalDate());
+                if ("y".equals(response)) {
+                    // Perform deletion
+                    String deleteSql = "DELETE FROM products WHERE id = ?";
+                    try (PreparedStatement deleteStmt = con.prepareStatement(deleteSql)) {
+                        deleteStmt.setInt(1, id);
+                        int rowsAffected = deleteStmt.executeUpdate();
+                        return rowsAffected + " product(s) deleted successfully";
+                    }
+                } else if ("n".equals(response)) {
+                    return "Deletion canceled by user";
                 } else {
-                    product.setImportedDate(null); // Handle null dates if necessary
-                }productList.add(product);
-            }
-            rs.close();
-            ps.close();
-            con.close();
-
-            if (productList.isEmpty()) {
-                throw new NotFoundException("No products found with name: " + name);
+                    System.out.println("Invalid input. Please enter 'y' or 'n'");
+                }
             }
 
-        } catch (SQLException | RuntimeException e) {
-            System.out.println(e.getMessage());
+        } catch (SQLException e) {
+            return "Error occurred: " + e.getMessage();
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (pstm != null) pstm.close();
+                if (con != null) con.close();
+            } catch (SQLException e) {
+                System.out.println("Error closing resources: " + e.getMessage());
+            }
+        }
+    }
+
+
+
+
+@Override
+public List<Product> searchProductsByName(String name) throws SQLException {
+    List<Product> productList = new ArrayList<>();
+    Connection con = null;
+    PreparedStatement ps = null;
+    ResultSet rs = null;
+    try {
+        con = DBConnection.getConnection();
+        if (con == null) {
+            throw new SQLException("Failed to establish database connection");
+        }
+        String sql = "SELECT * FROM products WHERE name LIKE ?";
+        ps = con.prepareStatement(sql);
+
+        //  (to prevent SQL injection)
+        ps.setString(1, "%" + name + "%");
+
+        rs = ps.executeQuery();
+
+        if (!rs.isBeforeFirst()) {
+            throw new NotFoundException(BoxBorder.red+"Product not found with name: "+BoxBorder.reset + name);
+        }
+        while (rs.next()) {
+            Product product = new Product();
+            product.setId(rs.getInt("id"));
+            product.setName(rs.getString("name"));
+            product.setUnitPrice(rs.getDouble("unit_price"));
+            product.setQuantity(rs.getInt("quantity"));
+
+            Date sqlDate = rs.getDate("imported_date");
+            if (sqlDate != null) {
+                product.setImportedDate(sqlDate.toLocalDate());
+            } else {
+                product.setImportedDate(null);
+            }
+            System.out.println("ID : " + product.getId());
+            System.out.println("Product Name: " + product.getName());
+            System.out.println("Product Price: " + product.getUnitPrice());
+            System.out.println("Product Quantity: " + product.getQuantity());
+            System.out.println("Product Date: " + product.getImportedDate());
+            productList.add(product);
         }
 
-        return productList;
+        if (productList.isEmpty()) {
+            throw new NotFoundException("No products found with name: " + name);
+        }
+    } catch (SQLException | RuntimeException e) {
+        System.out.println("Error occurred: " + e.getMessage());
+    } finally {
 
+        assert rs != null;
+        rs.close();
+        ps.close();
+        con.close();
     }
+    return productList;
+}
+
 
     @Override
     public void setDisplayRow(int rows) {
-        String sql = "UPDATE setting SET display_row = ? WHERE id = 1"; // Example query
-        try (Connection connection = DBConnection.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        final int DEFAULT_ROWS = 3;
 
-            preparedStatement.setInt(1, rows);
-            int result = preparedStatement.executeUpdate();
-            if (result > 0) {
-                System.out.println("Row setting updated successfully.");
-            } else {
-                System.out.println("Failed to update the row setting.");
+        if (rows <= 0) {
+            System.out.println("Rows cannot be less than or equal to 0. Setting default value: " + DEFAULT_ROWS + " items per page.");
+            rows = DEFAULT_ROWS;
+        }
+
+        String sql = "UPDATE setting SET display_row = ? WHERE id = 1"; // Example query
+
+        try (Connection connection = DBConnection.getConnection()) {
+            assert connection != null;
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
+                preparedStatement.setInt(1, rows);
+
+                int result = preparedStatement.executeUpdate();
+
+                if (result > 0) {
+                    System.out.println("Row setting updated successfully. Items per page: " + rows);
+                } else {
+                    System.out.println("Failed to update the row setting.");
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -247,9 +338,77 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public boolean backupProducts(String fileName) throws IOException, SQLException {
-        return false;
+    public boolean backupProducts(String backupDirectory) throws IOException, SQLException {
+        String dbUser = "postgres", dbPassword = "seyha", dbName = "stockmanagement";
+        String pgDumpPath = "C:\\Program Files\\PostgreSQL\\17\\bin\\pg_dump.exe";
+
+        // Generate a custom file name with versioning
+        String fileName = generateBackupFileName(backupDirectory);
+
+        // Build and execute the pg_dump command
+        ProcessBuilder processBuilder = new ProcessBuilder(
+                pgDumpPath, "--username=" + dbUser, "--dbname=" + dbName, "--file=" + fileName
+        );
+        processBuilder.environment().put("PGPASSWORD", dbPassword);
+        processBuilder.redirectErrorStream(true);
+
+        try {
+            // Log the command being executed
+            System.out.println("Executing command: " + String.join(" ", processBuilder.command()));
+            Process process = processBuilder.start();
+
+            // Capture and log output
+            StringBuilder output = new StringBuilder();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                reader.lines().forEach(line -> output.append(line).append("\n"));
+            }
+
+            int exitCode = process.waitFor();
+            if (exitCode == 0) {
+                System.out.println("Backup successful: " + fileName);
+                return true;
+            } else {
+                System.err.println("Backup failed. Exit code: " + exitCode + "\nOutput: " + output);
+                return false;
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            System.err.println("Backup interrupted.");
+            return false;
+        }
     }
+
+
+    private String generateBackupFileName(String backupDirectory) throws IOException {
+        Path dirPath = Paths.get(backupDirectory);
+        if (!Files.exists(dirPath)) {
+            Files.createDirectories(dirPath); // Create the directory if it doesn't exist
+        }
+
+        LocalDate currentDate = LocalDate.now();
+        String baseName = "Version%d-Product-Backup-" + currentDate + ".sql";
+
+        // Find the latest version number
+        int version = 1;
+        try (Stream<Path> files = Files.list(dirPath)) {
+            version = files
+                    .map(Path::getFileName)
+                    .map(Object::toString)
+                    .filter(name -> name.matches("^Version(\\d+)-Product-Backup-" + currentDate + "\\.sql$")) // Strict regex
+                    .peek(name -> System.out.println("Found backup file: " + name)) // Debugging: Log matching files
+                    .map(name -> {
+                        // Extract the version number using regex
+                        String versionPart = name.replaceAll("^Version(\\d+)-Product-Backup-" + currentDate + "\\.sql$", "$1");
+                        return Integer.parseInt(versionPart); // Parse the version number
+                    })
+                    .max(Integer::compareTo) // Find the highest version number
+                    .orElse(0) + 1; // Increment the highest version number
+        }
+
+        // Return the full file path
+        return dirPath.resolve(String.format(baseName, version)).toString();
+    }
+
 
     @Override
     public boolean restoreProducts(String fileName) throws IOException, SQLException {

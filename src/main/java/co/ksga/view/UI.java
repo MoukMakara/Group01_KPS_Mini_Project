@@ -2,11 +2,14 @@ package co.ksga.view;
 
 import co.ksga.controller.ProductController;
 import co.ksga.model.entity.Product;
+import co.ksga.utils.ProductValidation;
 import org.nocrala.tools.texttablefmt.BorderStyle;
 import org.nocrala.tools.texttablefmt.CellStyle;
 import org.nocrala.tools.texttablefmt.ShownBorders;
 import org.nocrala.tools.texttablefmt.Table;
 
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -18,7 +21,7 @@ public class UI {
     private static int currentPage = 0;
 
     // listAllProduct
-    public static void listAllProduct() {
+    public static void listAllProduct() throws SQLException {
         pageSize = productController.getDisplayRow(); // Get display row from the service
 
         // Get all products
@@ -121,10 +124,10 @@ public class UI {
                         if (pageNumber >= 1 && pageNumber <= totalPages) {
                             currentPage = pageNumber - 1;
                         } else {
-                            System.out.println("❌ Invalid page number. Please enter a number between 1 and " + totalPages + ".");
+                            System.out.println(BoxBorder.red + "Invalid page number. Please enter a number between 1 and " + totalPages + "." + BoxBorder.reset);
                         }
                     } catch (NumberFormatException e) {
-                        System.out.println("❌ Invalid input. Please enter a valid page number.");
+                        System.out.println(BoxBorder.red + "Invalid input. Please enter a valid page number." + BoxBorder.reset);
                     }
                     break;
                 case "e":
@@ -151,10 +154,14 @@ public class UI {
                     break;
                 case "d":
                     // Delete Operation (Seyha)
+                    DeleteProductByID();
+                    listAllProduct();
+
 
                     break;
                 case "s":
                     // Search Operation (Seyha)
+                    SearchProductByName();
 
                     break;
                 case "se":
@@ -170,7 +177,15 @@ public class UI {
 
                     break;
                 case "ba":
-                    // Backup Operation (Kim Long)
+                    String backupDirectory = "D:\\Data Structures and Algorithms\\Learn\\src\\Database\\backup";
+
+                    try {
+                        BackupDate(backupDirectory);
+                    } catch (SQLException | IOException e) {
+                        e.printStackTrace();
+                        System.err.println("Error: " + e.getMessage());
+                    }
+
 
                     break;
                 case "re":
@@ -178,13 +193,13 @@ public class UI {
 
                     break;
                 default:
-                    System.out.println("❌ Invalid choice, please choose a valid option.");
+                    System.out.println(BoxBorder.red+" Invalid choice, please choose a valid option."+BoxBorder.reset);
             }
         } while (true);
     }
 
     // Set row method for user input
-    public static void setRow() {
+    public static void setRow() throws SQLException {
         Scanner sc = new Scanner(System.in);
         System.out.print("Enter the number of rows to display per page: ");
         int rows = sc.nextInt();
@@ -238,9 +253,46 @@ public class UI {
         }
     }
 
-    // search for products by name
+    public static void BackupDate(String backupDirectory) throws SQLException, IOException {
+        // Prompt the user for confirmation
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Are you sure you want to back up the current date? (y/n): ");
+        String userInput = scanner.nextLine().trim().toLowerCase();
 
-    public static void home() {
+        // Validate user input
+        if (!userInput.equals("y") && !userInput.equals("n")) {
+            System.out.println("Invalid input. Please enter 'y' for yes or 'n' for no.");
+            return; // Exit the method if input is invalid
+        }
+
+        if (userInput.equals("n")) {
+            System.out.println("Backup canceled.");
+            return; // Exit the method if the user cancels
+        }
+
+        // Perform the backup
+        try {
+            boolean success = productController.backupProduct(backupDirectory);
+            System.out.println(success ? "Backup completed successfully." : "Backup failed.");
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Error during backup: " + e.getMessage());
+        }
+    }
+
+
+
+    // search for products by name
+    public static void SearchProductByName() throws SQLException {
+        String name = ProductValidation.productNameValidation("Enter the product name to search: ");
+        productController.getProductByName(name);
+    }
+    public static void DeleteProductByID(){
+        int id = ProductValidation.idValidation("ID");
+        productController.deleteProduct(id);
+    }
+
+    public static void home() throws SQLException {
         listAllProduct();
     }
 }

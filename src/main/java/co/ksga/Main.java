@@ -4,10 +4,11 @@ import co.ksga.model.entity.Product;
 import co.ksga.model.service.ProductServiceImpl;
 import co.ksga.view.UI;
 
+import java.sql.SQLException;
 import java.util.List;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws SQLException {
         String reset = "\u001B[0m";  // Reset color
         String cyanBold = "\u001B[1;36m";// Cyan color and bold
         System.out.println(cyanBold +"");

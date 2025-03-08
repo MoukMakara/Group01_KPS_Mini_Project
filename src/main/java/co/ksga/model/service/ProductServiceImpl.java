@@ -16,6 +16,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,7 +56,29 @@ public class ProductServiceImpl implements ProductService{
 
     @Override
     public Product readProductById(Integer id) {
-        return null;
+        String sql = "SELECT * FROM products WHERE id = ?";
+        Product product = null;
+
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
+            preparedStatement.setInt(1, id);
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            if (resultSet.next()) {
+                product = new Product();
+                product.setId(resultSet.getInt("id"));
+                product.setName(resultSet.getString("name"));
+                product.setUnitPrice(resultSet.getDouble("unit_price"));
+                product.setQuantity(resultSet.getInt("quantity"));
+                product.setImportedDate(resultSet.getDate("imported_date").toLocalDate());
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace(); // Handle properly in production code
+        }
+
+        return product;
     }
 
     @Override
@@ -117,7 +140,37 @@ public class ProductServiceImpl implements ProductService{
 
     @Override
     public void setDisplayRow(int rows) {
+        String sql = "UPDATE setting SET display_row = ? WHERE id = 1"; // Example query
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
+            preparedStatement.setInt(1, rows);
+            int result = preparedStatement.executeUpdate();
+            if (result > 0) {
+                System.out.println("Row setting updated successfully.");
+            } else {
+                System.out.println("Failed to update the row setting.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Error occurred while updating row setting.");
+        }
+    }
+
+    @Override
+    public int getDisplayRow() {
+        String sql = "SELECT display_row FROM setting WHERE id = 1";
+        try (Connection connection = DBConnection.getConnection();
+             Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(sql)) {
+            if (resultSet.next()) {
+                return resultSet.getInt("display_row");
+            } else {
+                throw new RuntimeException("No row found with id 1.");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

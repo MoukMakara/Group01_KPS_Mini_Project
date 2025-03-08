@@ -38,8 +38,12 @@ public class ProductController {
         return productService.searchProductsByName(name);
     }
     //7. Set Number of Display Row
-    public void setRow(int row){
-        productService.setDisplayRow(row);
+    public void setRow(int rows){
+        productService.setDisplayRow(rows);
+    }
+    // getDisplayRow
+    public int getDisplayRow() {
+        return productService.getDisplayRow();
     }
     //8. Save (Save insert product and update product to database)
     public Product saveProduct(Product product) {

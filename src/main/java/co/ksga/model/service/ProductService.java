@@ -27,6 +27,8 @@ public interface ProductService {
 
     //7. Set Number of Display Row
     void setDisplayRow(int rows);
+    // get display row
+    int getDisplayRow();
 
     //8. Save (Save insert product and update product to database)
     Product saveProduct(Product product);

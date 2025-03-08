@@ -118,7 +118,7 @@ public class ProductServiceImpl implements ProductService {
                     product.setImportedDate(resultSet.getDate("imported_date").toLocalDate());
                 } else {
                     // Product not found
-                    throw new NotFoundException(BoxBorder.red + "not found product with id " + reset + id);
+                    throw new NotFoundException(red + "not found product with id " + reset + id);
                 }
             }
         } catch (SQLException e) {
@@ -131,96 +131,121 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public void updateProduct(Product product) {
-        int id;
-        System.out.print("Enter ID : ");
-        id = sc.nextInt();
+        Scanner sc = new Scanner(System.in);
+        int id = 0;
+        while (true) {
+            System.out.print("Enter ID : ");
+            String idString = sc.nextLine().trim();
+
+            if (idString.isEmpty() || !idString.matches("\\d+")) {
+                System.out.println(red + "Invalid input! Please enter a valid numeric ID." + reset);
+                continue;
+            }
+            id = Integer.parseInt(idString);
+            break;
+        }
         String sql = "SELECT * FROM products WHERE id = " + id;
         try {
             Connection connection = DBConnection.getConnection();
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(sql);
-            while (resultSet.next()) {
-                // id
-//                System.out.println("ID: " + resultSet.getInt("id"));
-//                System.out.println("Name : " + resultSet.getString("name"));
-//                System.out.println("Unit Price : " + resultSet.getDouble("unit_price"));
-//                System.out.println("Quantity : " + resultSet.getInt("quantity"));
-//                System.out.println("Imported Date : " + resultSet.getDate("imported_date").toLocalDate());
-                product.setName(resultSet.getString("Name"));
-                product.setUnitPrice(resultSet.getDouble("unit_price"));
-                product.setQuantity(resultSet.getInt("quantity"));
 
-                Table table = new Table(5, BorderStyle.UNICODE_BOX_HEAVY_BORDER, ShownBorders.ALL);
-                table.addCell(magenta + "UPDATE PRODUCTS BY ID" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER), 5);
-                table.addCell(magenta + "ID" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(magenta + "NAME" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(magenta + "UNIT PRICE" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(magenta + "QUANTITY" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(magenta + "IMPORTED_DATE" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            if (!resultSet.next()) {
+                System.out.println(red+"No product found with ID: "+ reset + id);
+                return;
+            }
 
-                // Set column widths
-                for (int i = 0; i < 5; i++) {
-                    table.setColumnWidth(i, 25, 25);
+            product.setId(resultSet.getInt("id"));
+            product.setName(resultSet.getString("name"));
+            product.setUnitPrice(resultSet.getDouble("unit_price"));
+            product.setQuantity(resultSet.getInt("quantity"));
+
+            Table table = new Table(5, BorderStyle.UNICODE_BOX_HEAVY_BORDER, ShownBorders.ALL);
+            table.addCell(magenta + "UPDATE PRODUCTS BY ID" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER), 5);
+            table.addCell(magenta + "ID" + reset);
+            table.addCell(magenta + "NAME" + reset);
+            table.addCell(magenta + "UNIT PRICE" + reset);
+            table.addCell(magenta + "QUANTITY" + reset);
+            table.addCell(magenta + "IMPORTED_DATE" + reset);
+
+            for (int i = 0; i < 5; i++) {
+                table.setColumnWidth(i, 25, 25);
+            }
+
+            table.addCell(blue + product.getId() + reset);
+            table.addCell(blue + product.getName() + reset);
+            table.addCell(blue + product.getUnitPrice() + reset);
+            table.addCell(blue + product.getQuantity() + reset);
+            table.addCell(blue + resultSet.getDate("imported_date").toLocalDate() + reset);
+
+            System.out.println(table.render());
+
+            String option;
+            while (true) {
+                System.out.println("1. Name     2. Unit Price      3. Quantity   4. All fields");
+                System.out.print("Choose an option: ");
+                option = sc.next();
+
+                if (!option.matches("[1-4]")) {
+                    System.out.println(red+"Invalid option! Please enter 1, 2, 3, or 4."+ reset);
+                    continue;
                 }
 
-                // Add product rows to the table
-                table.addCell(blue + resultSet.getInt("id") + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(blue + resultSet.getString("name")+ reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(blue + resultSet.getDouble("unit_price")+ reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(blue + resultSet.getInt("quantity")+ reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(blue + resultSet.getDate("imported_date").toLocalDate()+ reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
-
-                // Render table
-                System.out.println(table.render());
-
-            }
-            int option;
-            while (true) {
-
-                System.out.println("1. Name     2. Unit Price      3. Quantity   4. All field");
-                System.out.print("Choose an option: ");
-                option = sc.nextInt();
-                switch (option) {
+                switch (Integer.parseInt(option)) {
                     case 1:
                         System.out.print("Enter Name: ");
                         product.setName(sc.next());
                         break;
                     case 2:
                         System.out.print("Enter Unit Price: ");
+                        while (!sc.hasNextDouble()) {
+                            System.out.println("Invalid input! Please enter a valid price.");
+                            sc.next();
+                        }
                         product.setUnitPrice(sc.nextDouble());
                         break;
                     case 3:
                         System.out.print("Enter Quantity: ");
+                        while (!sc.hasNextInt()) {
+                            System.out.println("Invalid input! Please enter a valid quantity.");
+                            sc.next();
+                        }
                         product.setQuantity(sc.nextInt());
                         break;
                     case 4:
                         System.out.print("Enter Name: ");
                         product.setName(sc.next());
+
                         System.out.print("Enter Unit Price: ");
+                        while (!sc.hasNextDouble()) {
+                            System.out.println("Invalid input! Please enter a valid price.");
+                            sc.next();
+                        }
                         product.setUnitPrice(sc.nextDouble());
+
                         System.out.print("Enter Quantity: ");
+                        while (!sc.hasNextInt()) {
+                            System.out.println("Invalid input! Please enter a valid quantity.");
+                            sc.next();
+                        }
                         product.setQuantity(sc.nextInt());
                         break;
-                    default:
-                        System.out.println("Invalid option. Try again.");
-                        continue;
                 }
+
                 System.out.print("Do you want to continue? (Y/N): ");
                 String response = sc.next().toUpperCase();
                 if (response.equals("N")) {
-                    System.out.println("Product details: ");
+                    System.out.println("Product details updated:");
                     System.out.println("Name: " + product.getName());
                     System.out.println("Unit Price: " + product.getUnitPrice());
                     System.out.println("Quantity: " + product.getQuantity());
-                    unsavedProduct(product,"update");
+                    unsavedProduct(product, "update");
                     break;
                 }
             }
-        } catch (SQLException sqlException) {
-            System.out.println("cannot get data " + sqlException.getSQLState());
+        } catch (SQLException e) {
+            System.out.println("Error fetching data: " + e.getMessage());
         }
-
-
     }
 
     @Override
@@ -240,7 +265,7 @@ public class ProductServiceImpl implements ProductService {
             rs = pstm.executeQuery();
 
             if (!rs.next()) {
-                throw new NotFoundException("Product not found with ID: " + id);
+                System.out.println(red+"Product with id " + reset+ yellow+ id + reset+ red+" does not exist."+ reset);
             }
 
             Table table = new Table(5, BorderStyle.UNICODE_BOX_HEAVY_BORDER, ShownBorders.ALL);
@@ -317,7 +342,7 @@ public class ProductServiceImpl implements ProductService {
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (!rs.isBeforeFirst()) {
-                    throw new NotFoundException(BoxBorder.red + "Product not found with name: " + reset + name);
+                    throw new NotFoundException(red + "Product not found with name: " + reset + name);
                 }
 
                 while (rs.next()) {

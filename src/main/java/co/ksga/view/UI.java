@@ -206,8 +206,10 @@ public class UI {
                     type = sc.nextLine().trim().toLowerCase();
                     if (type.equals("si")) {
                         productController.saveProduct("add");
+                        listAllProduct();
                     } else if(type.equals( "su")){
                         productController.saveProduct("update");
+                        listAllProduct();
                     }else if(type.equals("b")){
                         break;
                     }

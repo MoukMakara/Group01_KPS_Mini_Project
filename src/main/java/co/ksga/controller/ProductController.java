@@ -59,7 +59,7 @@ public class ProductController {
         return productService.backupProducts(fileName);
     }
     //11. Restore
-    public boolean restoreProduct(String fileName) throws SQLException, IOException {
-        return productService.restoreProducts(fileName);
+    public boolean restoreProduct(String backupFilePath) throws SQLException, IOException {
+        return productService.restoreProducts(backupFilePath);
     }
 }

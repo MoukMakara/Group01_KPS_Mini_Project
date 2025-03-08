@@ -18,10 +18,8 @@ public class DBConnection {
             System.out.println("Problem connecting to database: " + sqlException.getMessage());
         }
         return null;
+
     }
-
-
-
 }
 
 

@@ -7,6 +7,7 @@ import co.ksga.model.service.ProductServiceImpl;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class
@@ -26,7 +27,7 @@ ProductController {
         return productService.readProductById(id);
     }
     //4. Update
-    public int updateProduct(Product product, Integer id) {
+    public ArrayList<Product> updateProduct(Product product, Integer id) {
         return productService.updateProduct(product, id);
     }
     //5. Delete Product
@@ -39,8 +40,12 @@ ProductController {
         return productService.searchProductsByName(name);
     }
     //7. Set Number of Display Row
-    public void setRow(int row){
-        productService.setDisplayRow(row);
+    public void setRow(int rows){
+        productService.setDisplayRow(rows);
+    }
+    // getDisplayRow
+    public int getDisplayRow() {
+        return productService.getDisplayRow();
     }
     //8. Save (Save insert product and update product to database)
     public Product saveProduct(Product product) {

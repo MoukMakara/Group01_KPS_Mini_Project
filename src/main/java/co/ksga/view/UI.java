@@ -21,7 +21,6 @@ public class UI {
         List<Product> products = productController.getAllProducts();
         int totalPages = (int) Math.ceil(products.size() / (double) pageSize);
         Scanner sc = new Scanner(System.in);
-
         do {
             int start = currentPage * pageSize;
             int end = Math.min(start + pageSize, products.size());
@@ -151,7 +150,6 @@ public class UI {
                     break;
                 case "sa":
                     // Save Operation (Tra)
-
                     break;
                 case "un":
                     // Unsaved Operation (Tra)

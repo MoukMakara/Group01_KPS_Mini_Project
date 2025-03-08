@@ -322,11 +322,9 @@ public class UI {
         }
     }
 
-
-
     // search for products by name
     public static void SearchProductByName() throws SQLException {
-        String name = ProductValidation.productNameValidation("Enter the product name to search: ");
+        String name = ProductValidation.productNameValidation("product name to search");
         productController.getProductByName(name);
     }
     public static void DeleteProductByID(){

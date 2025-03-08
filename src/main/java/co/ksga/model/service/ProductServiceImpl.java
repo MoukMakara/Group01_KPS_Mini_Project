@@ -544,7 +544,7 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
-
+//backup handle
     private String generateBackupFileName(String backupDirectory) throws IOException {
         Path dirPath = Paths.get(backupDirectory);
         if (!Files.exists(dirPath)) {
@@ -576,8 +576,69 @@ public class ProductServiceImpl implements ProductService {
     }
 
 
+//    resore product
     @Override
-    public boolean restoreProducts(String fileName) throws IOException, SQLException {
-        return false;
+    public boolean restoreProducts(String backupFilePath) throws IOException, SQLException {
+        dropAllTables();
+
+        String dbUser = "postgres", dbPassword = "seyha", dbName = "stockmanagement";
+
+        String psqlPath = "C:\\Program Files\\PostgreSQL\\17\\bin\\psql.exe";
+
+        // Build the psql command to restore the database
+        ProcessBuilder processBuilder = new ProcessBuilder(
+                psqlPath, "--username=" + dbUser, "--dbname=" + dbName, "--file=" + backupFilePath
+        );
+        processBuilder.environment().put("PGPASSWORD", dbPassword);
+        processBuilder.redirectErrorStream(true);
+
+        try {
+            // Log the command being executed
+            System.out.println("Executing command: " + String.join(" ", processBuilder.command()));
+            Process process = processBuilder.start();
+
+            // Capture and log output
+            StringBuilder output = new StringBuilder();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                reader.lines().forEach(line -> output.append(line).append("\n"));
+            }
+
+            int exitCode = process.waitFor();
+            if (exitCode == 0) {
+                System.out.println("Database restore successful from: " + backupFilePath);
+                return true;
+            } else {
+                System.err.println("Database restore failed. Exit code: " + exitCode + "\nOutput: " + output);
+                return false;
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            System.err.println("Restore process was interrupted.");
+            return false;
+        }
     }
+    private void dropAllTables() {
+        String[] dropCommands = {
+                "DROP TABLE IF EXISTS public.products CASCADE;",
+                "DROP TABLE IF EXISTS public.setting CASCADE;",
+                "DROP SEQUENCE IF EXISTS public.products_id_seq;",
+                "DROP SEQUENCE IF EXISTS public.setting_id_seq;"
+        };
+
+        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/stockmanagement", "postgres", "seyha")) {
+            if (connection == null) {
+                System.err.println("Database connection is null. Cannot drop tables.");
+                return;
+            }
+            try (Statement statement = connection.createStatement()) {
+                for (String command : dropCommands) {
+                    statement.execute(command);
+                }
+                System.out.println("All tables dropped successfully.");
+            }
+        } catch (SQLException sqlException) {
+            System.err.println("Cannot drop tables: " + sqlException.getSQLState());
+        }
+    }
+
 }

@@ -8,11 +8,18 @@ import org.nocrala.tools.texttablefmt.CellStyle;
 import org.nocrala.tools.texttablefmt.ShownBorders;
 import org.nocrala.tools.texttablefmt.Table;
 
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Stream;
 
 import static co.ksga.view.BoxBorder.*;
 
@@ -179,6 +186,8 @@ public class UI {
                     // Delete Operation (Seyha)
                     DeleteProductByID();
                     listAllProduct();
+
+
                     break;
                 case "s":
                     // Search Operation (Seyha)
@@ -219,8 +228,8 @@ public class UI {
 
                     break;
                 case "ba":
-                    String backupDirectory = "D:\\Data Structures and Algorithms\\Learn\\src\\Database\\backup";
 
+                    String backupDirectory = "D:\\KSHRD-CENTER\\Java Assignment & Homwork\\Group01_KPS_Mini_Project\\src\\main\\java\\co\\ksga\\Backup";
                     try {
                         BackupDate(backupDirectory);
                     } catch (SQLException | IOException e) {
@@ -231,9 +240,11 @@ public class UI {
 
                     break;
                 case "re":
-                    // Restore Operation (Sreyphea)
+
+                    RestoreDate();
 
                     break;
+
                 default:
                     System.out.println(BoxBorder.red+" Invalid choice, please choose a valid option."+BoxBorder.reset);
             }
@@ -245,13 +256,15 @@ public class UI {
         Scanner sc = new Scanner(System.in);
         System.out.print("Enter the number of rows to display per page: ");
         int rows = sc.nextInt();
-        sc.nextLine();
+        sc.nextLine(); // Consume the newline character
 
+        // Update the row setting in the database via the controller
         productController.setRow(rows);
 
         // Update pageSize for pagination
         pageSize = rows;
 
+        // After setting the row successfully, list all products
         listAllProduct();
     }
 
@@ -326,11 +339,118 @@ public class UI {
         }
     }
 
+//    handle of restore data
+    public List<String> listBackupFiles(String backupDirectory) throws IOException {
+        Path dirPath = Paths.get(backupDirectory);
+        if (!Files.exists(dirPath)) {
+            throw new IOException("Backup directory does not exist: " + backupDirectory);
+        }
+
+        List<String> backupFiles = new ArrayList<>();
+        try (Stream<Path> files = Files.list(dirPath)) {
+            files
+                    .map(Path::getFileName)
+                    .map(Object::toString)
+                    .filter(name -> name.matches("^Version\\d+-Product-Backup-\\d{4}-\\d{2}-\\d{2}\\.sql$"))
+                    .forEach(backupFiles::add);
+        }
+        return backupFiles;
+    }
+
+
+
+    public static void RestoreDate() {
+        // Restore Operation (Sreyphea)
+        Scanner scanner = new Scanner(System.in);
+        String restoreDirectory = "D:\\KSHRD-CENTER\\Java Assignment & Homwork\\Group01_KPS_Mini_Project\\src\\main\\java\\co\\ksga\\Backup";
+        UI backup = new UI();
+
+        try {
+            // List all available backup files
+            List<String> backupFiles = backup.listBackupFiles(restoreDirectory);
+            if (backupFiles.isEmpty()) {
+                System.out.println(BoxBorder.red + "No backup files found in: " + BoxBorder.reset + restoreDirectory);
+                return;
+            }
+
+            // Create a styled table for backup files
+            Table table = new Table(2, BorderStyle.UNICODE_BOX_HEAVY_BORDER, ShownBorders.ALL);
+            table.addCell("No.", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell("Backup File Name", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+
+            for (int i = 0; i < backupFiles.size(); i++) {
+                table.addCell(BoxBorder.yellow+String.valueOf(i + 1)+BoxBorder.reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(BoxBorder.pink+backupFiles.get(i)+BoxBorder.reset, new CellStyle(CellStyle.HorizontalAlign.LEFT));
+            }
+
+            // Display the table
+            System.out.println("Available backup files:");
+            System.out.println(table.render());
+
+            int maxAttempts = 3;
+            int attemptCount = 0;
+            boolean isValidChoice = false;
+
+            while (attemptCount < maxAttempts) {
+                // Prompt user to select a backup file
+                System.out.print(BoxBorder.yellow + "Select a backup file to restore (enter the number): " + BoxBorder.reset);
+                String userInput = scanner.nextLine();
+
+                try {
+                    int fileChoice = Integer.parseInt(userInput);
+
+                    if (fileChoice >= 1 && fileChoice <= backupFiles.size()) {
+                        // Valid choice
+                        isValidChoice = true;
+
+                        String selectedBackupFile = backupFiles.get(fileChoice - 1);
+                        String backupFilePath = restoreDirectory + File.separator + selectedBackupFile;
+
+                        // Restore the database
+                        boolean restoreSuccess = productController.restoreProduct(backupFilePath);
+                        if (restoreSuccess) {
+                            System.out.println(BoxBorder.green + "Database restored successfully from: " + BoxBorder.reset + selectedBackupFile);
+                            listAllProduct();
+                        } else {
+                            System.out.println(BoxBorder.red + "Database restore failed." + BoxBorder.reset);
+                        }
+                        break;
+                    } else {
+                        attemptCount++;
+                        System.out.println(BoxBorder.red + "Invalid choice. : "+ BoxBorder.reset);
+                    }
+                } catch (NumberFormatException e) {
+                    attemptCount++;
+                    System.out.println(BoxBorder.red + "Invalid input. Please enter a number. "+ BoxBorder.reset);
+                }
+
+
+                if (attemptCount == maxAttempts) {
+                    System.out.print(BoxBorder.yellow + "You have reached the maximum number of attempts. Do you want to try again? (yes/no): " + BoxBorder.reset);
+                    String retryInput = scanner.nextLine().trim().toLowerCase();
+
+                    if (retryInput.equals("yes") || retryInput.equals("y")) {
+                        attemptCount = 0;
+                    } else {
+                        System.out.println(BoxBorder.red + "Exiting the restore process." + BoxBorder.reset);
+                        return;
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Error during restore: " + e.getMessage());
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     // search for products by name
     public static void SearchProductByName() throws SQLException {
         String name = ProductValidation.productNameValidation("product name to search");
         productController.getProductByName(name);
     }
+//    delete for product
     public static void DeleteProductByID(){
         int id = ProductValidation.idValidation("ID");
         productController.deleteProduct(id);

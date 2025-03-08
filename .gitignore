@@ -36,6 +36,3 @@ build/
 
 ### Mac OS ###
 .DS_Store
-
-### Ignore DBConnection.java ###
-src/main/java/co/ksga/utils/DBConnection.java

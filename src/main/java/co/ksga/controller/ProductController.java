@@ -13,7 +13,7 @@ public class ProductController {
     private final static ProductService productService = new ProductServiceImpl();
 
     //1. Write Product
-    public int addProduct(Product product) {
+    public List<Product> addProduct(Product product) {
         return productService.writeProducts(product);
     }
     //2. Display Product List

@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface ProductService {
     //1. Write Product
-    int writeProducts(Product product);
+     List<Product> writeProducts(Product product);
 
     //2. Display Product List
     List<Product> readAllProducts();

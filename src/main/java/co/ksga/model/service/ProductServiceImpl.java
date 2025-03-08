@@ -5,13 +5,26 @@ import co.ksga.model.entity.Product;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class ProductServiceImpl implements ProductService{
 
     @Override
-    public int writeProducts(Product product) {
-        return 0;
+    public List<Product> writeProducts(Product product) {
+        Scanner sc = new Scanner(System.in);
+        List<Product> tepProduct = new ArrayList<Product>();
+        System.out.println("Input Product Name: ");
+        String name = sc.nextLine();
+        System.out.println("Enter Price : ");
+        double price = sc.nextDouble();
+        System.out.println("Enter Quantity : ");
+        int quantity = sc.nextInt();
+        System.out.println("Enter to continue : ");
+        sc.nextLine();
+        tepProduct.add(product);
+        return tepProduct;
     }
 
     @Override

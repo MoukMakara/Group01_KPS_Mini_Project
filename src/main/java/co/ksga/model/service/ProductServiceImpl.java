@@ -71,7 +71,6 @@ public class ProductServiceImpl implements ProductService {
         } catch (SQLException e) {
             e.printStackTrace(); // Handle properly in production code
         }
-
         return product;
     }
 
@@ -91,6 +90,7 @@ public class ProductServiceImpl implements ProductService {
                 product.setName(resultSet.getString("Name"));
                 product.setUnitPrice(resultSet.getDouble("unit_price"));
                 product.setQuantity(resultSet.getInt("quantity"));
+                product.setImportedDate(resultSet.getDate("imported_date").toLocalDate());
             }
             int option;
             while (true) {
@@ -130,14 +130,13 @@ public class ProductServiceImpl implements ProductService {
                     System.out.println("Name: " + product.getName());
                     System.out.println("Unit Price: " + product.getUnitPrice());
                     System.out.println("Quantity: " + product.getQuantity());
+                    System.out.println("ImportDate : " + product.getImportedDate());
                     break;
                 }
             }
         } catch (SQLException sqlException) {
             System.out.println("cannot get data " + sqlException.getSQLState());
         }
-
-
         tepProducts.add(product);
         return tepProducts;
     }
@@ -146,10 +145,6 @@ public class ProductServiceImpl implements ProductService {
     public int deleteProduct(Integer id) {
         return 0;
     }
-
-
-
-
 
     public List<Product> searchProductsByName(String name) {
         List<Product> productList = new ArrayList<>();

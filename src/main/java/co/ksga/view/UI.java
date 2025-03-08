@@ -147,6 +147,7 @@ public class UI {
                     break;
                 case "u":
                     // Update Operation (Try)
+                    productController.updateProduct(new Product(),1);
 
                     break;
                 case "d":
@@ -163,7 +164,6 @@ public class UI {
                     break;
                 case "sa":
                     // Save Operation (Tra)
-
                     break;
                 case "un":
                     // Unsaved Operation (Tra)

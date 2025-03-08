@@ -62,7 +62,7 @@ public class UI {
             }
 
             // Pagination and total records info
-            table.addCell(green + "PAGE NUMBER : " + reset + yellow + (currentPage + 1) +reset + green + " of " + totalPages + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER), 2);
+            table.addCell(green + "PAGE NUMBER : " + reset + yellow + (currentPage + 1) +reset + green + " of " +reset + red + totalPages + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER), 2);
             table.addCell(green + "TOTAL RECORD" + reset + " : " + darkRed + products.size() +reset, new CellStyle(CellStyle.HorizontalAlign.CENTER), 3);
 
             // Render table
@@ -114,7 +114,7 @@ public class UI {
             System.out.println(table2.render());
 
             // Get user input for option selection
-            System.out.print("Choose Option: ");
+            System.out.print(blue + "Choose Option: " +reset);
             String option = sc.nextLine().trim().toLowerCase();
 
             switch (option) {
@@ -136,24 +136,27 @@ public class UI {
                     currentPage = totalPages - 1;
                     break;
                 case "g":
-                    System.out.print("Enter the page number you want to go to: ");
-                    String inputPage = sc.nextLine().trim();
-                    try {
-                        int pageNumber = Integer.parseInt(inputPage);
-                        if (pageNumber >= 1 && pageNumber <= totalPages) {
-                            currentPage = pageNumber - 1;
-                        } else {
-                            System.out.println(BoxBorder.red + "Invalid page number. Please enter a number between 1 and " + totalPages + "." + BoxBorder.reset);
+                    while (true) {
+                        System.out.print(blue + "Enter the page number you want to go to: " +reset);
+                        String inputPage = sc.nextLine().trim();
+                        try {
+                            int pageNumber = Integer.parseInt(inputPage);
+                            if (pageNumber >= 1 && pageNumber <= totalPages) {
+                                currentPage = pageNumber - 1;
+                                break;
+                            } else {
+                                System.out.println(red +"Invalid page number. Please enter a number between 1 and " + totalPages + "." +reset);
+                            }
+                        } catch (NumberFormatException e) {
+                            System.out.println(red + "Invalid input. Please enter a valid page number." + reset);
                         }
-                    } catch (NumberFormatException e) {
-                        System.out.println(BoxBorder.red + "Invalid input. Please enter a valid page number." + BoxBorder.reset);
                     }
                     break;
                 case "e":
                     System.out.print("\n\uD83E\uDD14 Are you sure you want to exit? (Y/N): ");
                     String confirmExit = sc.nextLine();
                     if (confirmExit.equalsIgnoreCase("Y")) {
-                        System.out.println("\uD83D\uDD1A Exiting the system. Thank You \uD83D\uDE0A❣\uFE0F");
+                        System.out.println(red + "\uD83D\uDD1A Exiting the system. Thank You \uD83D\uDE0A❣\uFE0F" +reset);
                         System.exit(0);
                     }
                     break;
@@ -164,6 +167,8 @@ public class UI {
                     productController.addProduct(new Product());
                     break;
                 case "r":
+                    // Read Operation (Makara)
+                    // read product by id
                     searchById();
                     break;
                 case "u":
@@ -240,15 +245,13 @@ public class UI {
         Scanner sc = new Scanner(System.in);
         System.out.print("Enter the number of rows to display per page: ");
         int rows = sc.nextInt();
-        sc.nextLine(); // Consume the newline character
+        sc.nextLine();
 
-        // Update the row setting in the database via the controller
         productController.setRow(rows);
 
         // Update pageSize for pagination
         pageSize = rows;
 
-        // After setting the row successfully, list all products
         listAllProduct();
     }
 
@@ -265,7 +268,7 @@ public class UI {
         sc.nextLine(); // Consume the newline character
 
         Product product = productController.getProductById(id);
-        if (product != null) {
+        if (product!= null) {
             Table table = new Table(5, BorderStyle.UNICODE_BOX_HEAVY_BORDER, ShownBorders.ALL);
             table.addCell(magenta + "GET PRODUCTS BY ID" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER), 5);
             table.addCell(magenta + "ID" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
@@ -323,11 +326,9 @@ public class UI {
         }
     }
 
-
-
     // search for products by name
     public static void SearchProductByName() throws SQLException {
-        String name = ProductValidation.productNameValidation("Enter the product name to search: ");
+        String name = ProductValidation.productNameValidation("product name to search");
         productController.getProductByName(name);
     }
     public static void DeleteProductByID(){

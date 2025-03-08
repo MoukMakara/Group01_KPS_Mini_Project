@@ -64,7 +64,7 @@ ProductController {
         return productService.restoreProducts(fileName);
     }
 
-    public void displayProduct() {
-        productService.displayProduct();
+    public void displayProduct(String operation) {
+        productService.displayProduct(operation);
     }
 }

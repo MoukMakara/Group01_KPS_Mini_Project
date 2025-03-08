@@ -192,8 +192,10 @@ public class UI {
                     type = sc.nextLine().trim().toLowerCase();
                     if (type.equals("si")) {
                         productController.saveProduct("add");
-                    } else {
+                    } else if(type.equals( "su")){
                         productController.saveProduct("update");
+                    }else if(type.equals("b")){
+                        break;
                     }
                     break;
                 case "un":
@@ -201,9 +203,9 @@ public class UI {
                     System.out.println("\n'ui' for saving insert products and 'uu' for saving update products or 'b' for back to menu");
                     String types = ProductValidation.productNameValidation("option");
                     if(types.equals("ui")){
-                        productController.displayProduct();
+                        productController.displayProduct("insert");
                     }else if(types.equals("uu")){
-                        productController.displayProduct();
+                        productController.displayProduct("update");
                     }else if(types.equals("b")){
                         break;
                     }

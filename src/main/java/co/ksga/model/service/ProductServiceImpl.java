@@ -7,6 +7,10 @@ import co.ksga.utils.DBConnection;
 import co.ksga.utils.ProductValidation;
 import co.ksga.view.BoxBorder;
 import co.ksga.view.UI;
+import org.nocrala.tools.texttablefmt.BorderStyle;
+import org.nocrala.tools.texttablefmt.CellStyle;
+import org.nocrala.tools.texttablefmt.ShownBorders;
+import org.nocrala.tools.texttablefmt.Table;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -20,6 +24,8 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
+
+import static co.ksga.view.BoxBorder.*;
 
 public class ProductServiceImpl implements ProductService {
     ArrayList<Product> productUpdate = new ArrayList<>();
@@ -112,7 +118,7 @@ public class ProductServiceImpl implements ProductService {
                     product.setImportedDate(resultSet.getDate("imported_date").toLocalDate());
                 } else {
                     // Product not found
-                    throw new NotFoundException(BoxBorder.red + "not found product with id " + BoxBorder.reset + id);
+                    throw new NotFoundException(BoxBorder.red + "not found product with id " + reset + id);
                 }
             }
         } catch (SQLException e) {
@@ -273,7 +279,7 @@ public class ProductServiceImpl implements ProductService {
             rs = ps.executeQuery();
 
             if (!rs.isBeforeFirst()) {
-                throw new NotFoundException(BoxBorder.red + "Product not found with name: " + BoxBorder.reset + name);
+                throw new NotFoundException(BoxBorder.red + "Product not found with name: " + reset + name);
             }
             while (rs.next()) {
                 Product product = new Product();
@@ -404,12 +410,41 @@ public class ProductServiceImpl implements ProductService {
         }
     }
     @Override
-    public void displayProduct() {
-        for (Product product : productUpdate) {
-            System.out.println("Name : " + product.getName());
-            System.out.println("Prize : " + product.getUnitPrice());
-            System.out.println("Quantity : " + product.getQuantity());
+    public void displayProduct(String operation) {
+        Table table = new Table(5, BorderStyle.UNICODE_BOX_HEAVY_BORDER, ShownBorders.ALL);
+        table.addCell(magenta + "UPDATE PRODUCTS BY ID" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER), 5);
+        table.addCell(magenta + "ID" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+        table.addCell(magenta + "NAME" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+        table.addCell(magenta + "UNIT PRICE" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+        table.addCell(magenta + "QUANTITY" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+        table.addCell(magenta + "IMPORTED_DATE" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+
+        // Set column widths
+        for (int i = 0; i < 5; i++) {
+            table.setColumnWidth(i, 25, 25);
         }
+        if(operation.equals("insert")){
+            for (Product product : productInsert) {
+                // Add product rows to the table
+                table.addCell(blue + product.getId() +reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(blue + product.getName()  + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(blue + product.getUnitPrice() + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(blue + product.getQuantity() + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(blue + product.getImportedDate()+reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            }
+        }else if(operation.equals("update")){
+            for (Product product : productUpdate) {
+                table.addCell(blue + product.getId() +reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(blue + product.getName()  + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(blue + product.getUnitPrice() + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(blue + product.getQuantity() + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(blue + product.getImportedDate()+reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+
+            }
+        }
+        // Render table
+        System.out.println(table.render());
+
     }
     @Override
     public boolean backupProducts(String backupDirectory) throws IOException, SQLException {

@@ -2,6 +2,7 @@ package co.ksga.view;
 
 import co.ksga.controller.ProductController;
 import co.ksga.model.entity.Product;
+import co.ksga.model.service.ProductServiceImpl;
 import org.nocrala.tools.texttablefmt.BorderStyle;
 import org.nocrala.tools.texttablefmt.CellStyle;
 import org.nocrala.tools.texttablefmt.ShownBorders;
@@ -138,6 +139,7 @@ public class UI {
                 // Product Operations
                 case "w":
                     // Write Operation (Jakriya)
+                    productController.addProduct(new Product());
                     break;
                 case "r":
                     // Read Operation (Makara)
@@ -146,7 +148,7 @@ public class UI {
                     break;
                 case "u":
                     // Update Operation (Try)
-
+                    productController.updateProduct(new Product());
                     break;
                 case "d":
                     // Delete Operation (Seyha)
@@ -162,10 +164,27 @@ public class UI {
                     break;
                 case "sa":
                     // Save Operation (Tra)
+                    String type;
+                    System.out.println(" 'si' for saving insert products and 'su' for saving update products or 'b' for back to menu");
+                    System.out.print("Enter option : ");
+                    type = sc.nextLine().trim().toLowerCase();
+                    if (type.equals("si")) {
+                        productController.saveProduct("add");
+                    } else {
+                        productController.saveProduct("update");
+                    }
                     break;
                 case "un":
+                    String types;
+                    System.out.println("\n'ui' for saving insert products and 'uu' for saving update products or 'b' for back to menu");
+                    System.out.print("Enter option : ");
+                    types = sc.nextLine().trim().toLowerCase();
+                    if(types.equals("ui")){
+                        productController.unSaveProduct(new Product(),"add");
+                    }else if(types.equals("uu")){
+                        productController.unSaveProduct(new Product(),"update");
+                    }
                     // Unsaved Operation (Tra)
-
                     break;
                 case "ba":
                     // Backup Operation (Kim Long)
@@ -197,6 +216,12 @@ public class UI {
         // After setting the row successfully, list all products
         listAllProduct();
     }
+
+    // updateProduct
+    public static void updateProduct() {
+        productController.updateProduct(new Product());
+    }
+
     // search for products by id
     public static void searchById() {
         Scanner sc = new Scanner(System.in);
@@ -205,7 +230,7 @@ public class UI {
         sc.nextLine(); // Consume the newline character
 
         Product product = productController.getProductById(id);
-        if (product!= null) {
+        if (product != null) {
             Table table = new Table(5, BorderStyle.UNICODE_BOX_HEAVY_BORDER, ShownBorders.ALL);
             table.addCell("GET PRODUCTS BY ID", new CellStyle(CellStyle.HorizontalAlign.CENTER), 5);
             table.addCell("ID", new CellStyle(CellStyle.HorizontalAlign.CENTER));

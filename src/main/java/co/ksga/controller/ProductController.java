@@ -10,12 +10,13 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProductController {
+public class
+ProductController {
     private final static ProductService productService = new ProductServiceImpl();
 
     //1. Write Product
-    public int addProduct(Product product) {
-        return productService.writeProducts(product);
+    public void addProduct(Product product) {
+         productService.writeProducts(product);
     }
     //2. Display Product List
     public List<Product> getAllProducts() {
@@ -26,16 +27,16 @@ public class ProductController {
         return productService.readProductById(id);
     }
     //4. Update
-    public ArrayList<Product> updateProduct(Product product, Integer id) {
-        return productService.updateProduct(product, id);
+    public void updateProduct(Product product) {
+         productService.updateProduct(product);
     }
     //5. Delete Product
-    public int deleteProduct(Integer id) {
+    public String deleteProduct(Integer id) {
         return productService.deleteProduct(id);
     }
 
     //6. Search by product name
-    public List<Product> getProductByName(String name) {
+    public List<Product> getProductByName(String name) throws SQLException {
         return productService.searchProductsByName(name);
     }
     //7. Set Number of Display Row
@@ -47,12 +48,12 @@ public class ProductController {
         return productService.getDisplayRow();
     }
     //8. Save (Save insert product and update product to database)
-    public Product saveProduct(Product product) {
-        return productService.saveProduct(product);
+    public void saveProduct( String operation) {
+         productService.saveProduct(operation);
     }
     //9. Unsaved (View insert product and update product)
-    public void unSaveProduct(Product product) {
-        productService.unsavedProduct(product);
+    public  void unSaveProduct(Product product, String operation) {
+         productService.unsavedProduct(product , operation);
     }
     //10. Backup
     public boolean backupProduct(String fileName) throws SQLException, IOException {

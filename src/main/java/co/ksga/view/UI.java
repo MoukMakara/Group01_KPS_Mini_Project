@@ -2,11 +2,14 @@ package co.ksga.view;
 
 import co.ksga.controller.ProductController;
 import co.ksga.model.entity.Product;
+import co.ksga.utils.ProductValidation;
 import org.nocrala.tools.texttablefmt.BorderStyle;
 import org.nocrala.tools.texttablefmt.CellStyle;
 import org.nocrala.tools.texttablefmt.ShownBorders;
 import org.nocrala.tools.texttablefmt.Table;
 
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -20,7 +23,7 @@ public class UI {
     private static int currentPage = 0;
 
     // listAllProduct
-    public static void listAllProduct() {
+    public static void listAllProduct() throws SQLException {
         pageSize = productController.getDisplayRow(); // Get display row from the service
 
         // Get all products
@@ -161,6 +164,7 @@ public class UI {
                 // Product Operations
                 case "w":
                     // Write Operation (Jakriya)
+                    productController.addProduct(new Product());
                     break;
                 case "r":
                     // Read Operation (Makara)
@@ -169,14 +173,16 @@ public class UI {
                     break;
                 case "u":
                     // Update Operation (Try)
-
+                    productController.updateProduct(new Product());
                     break;
                 case "d":
                     // Delete Operation (Seyha)
-
+                    DeleteProductByID();
+                    listAllProduct();
                     break;
                 case "s":
                     // Search Operation (Seyha)
+                    SearchProductByName();
 
                     break;
                 case "se":
@@ -185,14 +191,39 @@ public class UI {
                     break;
                 case "sa":
                     // Save Operation (Tra)
-
+                    String type;
+                    System.out.println(" 'si' for saving insert products and 'su' for saving update products or 'b' for back to menu");
+                    System.out.print("Enter option : ");
+                    type = sc.nextLine().trim().toLowerCase();
+                    if (type.equals("si")) {
+                        productController.saveProduct("add");
+                    } else {
+                        productController.saveProduct("update");
+                    }
                     break;
                 case "un":
+                    String types;
+                    System.out.println("\n'ui' for saving insert products and 'uu' for saving update products or 'b' for back to menu");
+                    System.out.print("Enter option : ");
+                    types = sc.nextLine().trim().toLowerCase();
+                    if(types.equals("ui")){
+                        productController.unSaveProduct(new Product(),"add");
+                    }else if(types.equals("uu")){
+                        productController.unSaveProduct(new Product(),"update");
+                    }
                     // Unsaved Operation (Tra)
 
                     break;
                 case "ba":
-                    // Backup Operation (Kim Long)
+                    String backupDirectory = "D:\\Data Structures and Algorithms\\Learn\\src\\Database\\backup";
+
+                    try {
+                        BackupDate(backupDirectory);
+                    } catch (SQLException | IOException e) {
+                        e.printStackTrace();
+                        System.err.println("Error: " + e.getMessage());
+                    }
+
 
                     break;
                 case "re":
@@ -200,13 +231,13 @@ public class UI {
 
                     break;
                 default:
-                    System.out.println("❌ Invalid choice, please choose a valid option.");
+                    System.out.println(BoxBorder.red+" Invalid choice, please choose a valid option."+BoxBorder.reset);
             }
         } while (true);
     }
 
     // Set row method for user input
-    public static void setRow() {
+    public static void setRow() throws SQLException {
         Scanner sc = new Scanner(System.in);
         System.out.print("Enter the number of rows to display per page: ");
         int rows = sc.nextInt();
@@ -219,6 +250,12 @@ public class UI {
 
         listAllProduct();
     }
+
+    // updateProduct
+    public static void updateProduct() {
+        productController.updateProduct(new Product());
+    }
+
     // search for products by id
     public static void searchById() {
         Scanner sc = new Scanner(System.in);
@@ -258,9 +295,46 @@ public class UI {
         }
     }
 
-    // search for products by name
+    public static void BackupDate(String backupDirectory) throws SQLException, IOException {
+        // Prompt the user for confirmation
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Are you sure you want to back up the current date? (y/n): ");
+        String userInput = scanner.nextLine().trim().toLowerCase();
 
-    public static void home() {
+        // Validate user input
+        if (!userInput.equals("y") && !userInput.equals("n")) {
+            System.out.println("Invalid input. Please enter 'y' for yes or 'n' for no.");
+            return; // Exit the method if input is invalid
+        }
+
+        if (userInput.equals("n")) {
+            System.out.println("Backup canceled.");
+            return; // Exit the method if the user cancels
+        }
+
+        // Perform the backup
+        try {
+            boolean success = productController.backupProduct(backupDirectory);
+            System.out.println(success ? "Backup completed successfully." : "Backup failed.");
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Error during backup: " + e.getMessage());
+        }
+    }
+
+
+
+    // search for products by name
+    public static void SearchProductByName() throws SQLException {
+        String name = ProductValidation.productNameValidation("Enter the product name to search: ");
+        productController.getProductByName(name);
+    }
+    public static void DeleteProductByID(){
+        int id = ProductValidation.idValidation("ID");
+        productController.deleteProduct(id);
+    }
+
+    public static void home() throws SQLException {
         listAllProduct();
     }
 }

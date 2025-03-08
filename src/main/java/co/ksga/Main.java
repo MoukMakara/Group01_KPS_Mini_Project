@@ -4,12 +4,13 @@ import co.ksga.model.entity.Product;
 import co.ksga.model.service.ProductServiceImpl;
 import co.ksga.view.UI;
 
+import java.sql.SQLException;
 import java.util.List;
 
 import static co.ksga.view.BoxBorder.*;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws SQLException {
         System.out.println("\n");
         System.out.print(cyan);
         System.out.println(SPACE.repeat(10) + TOP_LEFT_CONNECTOR_CORNER + HORIZONTAL_CONNECTOR_BORDER.repeat(120) + TOP_RIGHT_CONNECTOR_CORNER);

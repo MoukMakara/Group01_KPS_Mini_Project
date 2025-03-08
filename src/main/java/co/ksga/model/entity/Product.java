@@ -1,12 +1,13 @@
 package co.ksga.model.entity;
 
+import java.sql.Date;
 import java.time.LocalDate;
 
 public class Product {
     private Integer id;
     private String name;
-    private Double unitPrice;
-    private Integer quantity;
+    private double unitPrice;
+    private int quantity;
     private LocalDate importedDate;
 
     public Product() {}
@@ -51,11 +52,11 @@ public class Product {
         this.quantity = quantity;
     }
 
-    public LocalDate getImportedDate() {
-        return importedDate;
-    }
 
     public void setImportedDate(LocalDate importedDate) {
         this.importedDate = importedDate;
+    }
+    public LocalDate getImportedDate() {
+        return importedDate;
     }
 }

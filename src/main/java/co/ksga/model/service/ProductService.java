@@ -42,4 +42,6 @@ public interface ProductService {
 
     //11. Restore
     boolean restoreProducts(String fileName) throws IOException, SQLException;
+
+    void displayProduct();
 }

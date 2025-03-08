@@ -197,15 +197,17 @@ public class UI {
                     }
                     break;
                 case "un":
-                    String types;
+
                     System.out.println("\n'ui' for saving insert products and 'uu' for saving update products or 'b' for back to menu");
-                    System.out.print("Enter option : ");
-                    types = sc.nextLine().trim().toLowerCase();
+                    String types = ProductValidation.productNameValidation("option");
                     if(types.equals("ui")){
-                        productController.unSaveProduct(new Product(),"add");
+                        productController.displayProduct();
                     }else if(types.equals("uu")){
-                        productController.unSaveProduct(new Product(),"update");
+                        productController.displayProduct();
+                    }else if(types.equals("b")){
+                        break;
                     }
+
                     // Unsaved Operation (Tra)
 
                     break;

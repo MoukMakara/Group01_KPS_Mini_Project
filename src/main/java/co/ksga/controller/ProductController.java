@@ -63,4 +63,8 @@ ProductController {
     public boolean restoreProduct(String fileName) throws SQLException, IOException {
         return productService.restoreProducts(fileName);
     }
+
+    public void displayProduct() {
+        productService.displayProduct();
+    }
 }

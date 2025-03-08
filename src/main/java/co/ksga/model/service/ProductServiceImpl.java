@@ -38,6 +38,14 @@ public class ProductServiceImpl implements ProductService{
 
     @Override
     public int deleteProduct(Integer id) {
+        try {
+            Connection con = DBConnection.getConnection();
+            String sql = "delete from products where id = ?";
+            PreparedStatement ps = con.prepareStatement(sql);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
         return 0;
     }
 
@@ -71,7 +79,6 @@ public class ProductServiceImpl implements ProductService{
                     product.setImportedDate(null); // Handle null dates if necessary
                 }productList.add(product);
             }
-
             rs.close();
             ps.close();
             con.close();

@@ -8,9 +8,9 @@ public class DBConnection {
     public static Connection getConnection() {
         try {
             return DriverManager.getConnection(
-                    "jdbc:postgresql://localhost:5432/stockmanagement",
+                    "jdbc:postgresql://localhost:5432/stock_management",
                     "postgres",
-                    "seyha"
+                    "Admin"
             );
         }catch (SQLException sqlException){
             System.out.println("problem connecting to database");

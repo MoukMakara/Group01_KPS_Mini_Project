@@ -4,6 +4,7 @@ import co.ksga.model.entity.Product;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 public interface ProductService {
@@ -17,7 +18,7 @@ public interface ProductService {
     Product readProductById(Integer id);
 
     //4. Update
-    int updateProduct(Product product, Integer id);
+    ArrayList<Product> updateProduct(Product product, Integer id);
 
     //5. Delete Product
     int deleteProduct(Integer id);
@@ -27,6 +28,8 @@ public interface ProductService {
 
     //7. Set Number of Display Row
     void setDisplayRow(int rows);
+    // get display row
+    int getDisplayRow();
 
     //8. Save (Save insert product and update product to database)
     Product saveProduct(Product product);

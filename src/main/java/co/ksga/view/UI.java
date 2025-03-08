@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.stream.Stream;
 
+import static co.ksga.view.BoxBorder.*;
+
 public class UI {
     private final static ProductController productController = new ProductController();
     private static List<Product> products = new ArrayList<>();
@@ -44,12 +46,12 @@ public class UI {
 
             // Create the table to display product info
             Table table = new Table(5, BorderStyle.UNICODE_BOX_HEAVY_BORDER, ShownBorders.ALL);
-            table.addCell("ALL PRODUCTS INFO", new CellStyle(CellStyle.HorizontalAlign.CENTER), 5);
-            table.addCell("ID", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell("NAME", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell("UNIT PRICE", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell("QUANTITY", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell("IMPORTED_DATE", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell(magenta +"ALL PRODUCTS INFO" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER), 5);
+            table.addCell(magenta +"ID"+ reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell(magenta +"NAME"+ reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell(magenta +"UNIT PRICE"+ reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell(magenta +"QUANTITY"+ reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell(magenta +"IMPORTED_DATE"+ reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
 
             // Set column widths
             for (int i = 0; i < 5; i++) {
@@ -59,50 +61,67 @@ public class UI {
             // Add product rows to the table
             for (int i = start; i < end; i++) {
                 Product product = products.get(i);
-                table.addCell(product.getId().toString(), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(product.getName(), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(String.valueOf(product.getUnitPrice()), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(String.valueOf(product.getQuantity()), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-                table.addCell(product.getImportedDate().toString(), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(blue + product.getId().toString() + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(blue + product.getName()+ reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(blue + String.valueOf(product.getUnitPrice())+ reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(blue + String.valueOf(product.getQuantity())+ reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(blue + product.getImportedDate().toString()+ reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
             }
 
             // Pagination and total records info
-            table.addCell("PAGE NUMBER " + (currentPage + 1) + " / " + totalPages, new CellStyle(CellStyle.HorizontalAlign.CENTER), 2);
-            table.addCell("TOTAL RECORD " + products.size(), new CellStyle(CellStyle.HorizontalAlign.CENTER), 3);
+            table.addCell(green + "PAGE NUMBER : " + reset + yellow + (currentPage + 1) +reset + green + " of " +reset + red + totalPages + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER), 2);
+            table.addCell(green + "TOTAL RECORD" + reset + " : " + darkRed + products.size() +reset, new CellStyle(CellStyle.HorizontalAlign.CENTER), 3);
 
             // Render table
             System.out.println(table.render());
 
-            // Create the menu table
-            Table table2 = new Table(5, BorderStyle.UNICODE_BOX_HEAVY_BORDER, ShownBorders.ALL);
-            table2.addCell("MENU", new CellStyle(CellStyle.HorizontalAlign.CENTER), 5);
-            table2.addCell("[F] First Page", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table2.addCell("[N] Next Page", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table2.addCell("[P] Previous Page", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table2.addCell("[L] Last Page", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table2.addCell("[G] GOTO", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table2.addCell("[E] Exit", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table2.addCell("[W] Write", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table2.addCell("[R] Read (id)", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table2.addCell("[U] Update", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table2.addCell("[D] Delete", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table2.addCell("[S] Search (name)", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table2.addCell("[Se] Set rows", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table2.addCell("[Sa] Save", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table2.addCell("[Un] Unsaved", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table2.addCell("[Ba] Backup", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table2.addCell("[Re] Restore", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            Table table2 = new Table(5, BorderStyle.UNICODE_BOX_DOUBLE_BORDER, ShownBorders.SURROUND);
+            CellStyle cellStyle = new CellStyle(CellStyle.HorizontalAlign.CENTER);
+            table2.setColumnWidth(0, 20, 25);
+            table2.setColumnWidth(1, 20, 25);
+            table2.setColumnWidth(2, 20, 25);
+            table2.setColumnWidth(3, 20, 25);
+            table2.setColumnWidth(4, 20, 25);
 
-            // Set column widths for the menu table
-            for (int i = 0; i < 5; i++) {
-                table2.setColumnWidth(i, 30, 50);
-            }
+            table2.addCell(" ");
+            table2.addCell(" ", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table2.addCell(magenta + "APPLICATION MENU"+ reset, new CellStyle(CellStyle.HorizontalAlign.CENTER)); // Set colspan to 5
+            table2.addCell(" ", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table2.addCell(" ");
+            table2.addCell(HORIZONTAL_CONNECTOR_BORDER.repeat(20));
+            table2.addCell(HORIZONTAL_CONNECTOR_BORDER.repeat(20));
+            table2.addCell(HORIZONTAL_CONNECTOR_BORDER.repeat(20));
+            table2.addCell(HORIZONTAL_CONNECTOR_BORDER.repeat(20));
+            table2.addCell(HORIZONTAL_CONNECTOR_BORDER.repeat(20));
 
-            // Render menu table
+            table2.addCell(cyan + "  (F) First Page");
+            table2.addCell(cyan + "  (N) Next Page");
+            table2.addCell(cyan + "  (P) Previous Page");
+            table2.addCell(cyan + "  (L) Last Page");
+            table2.addCell(cyan + "  (G) GOTO" + reset);
+            ////////////////////////////////////////////////////////////////
+            table2.addCell(HORIZONTAL_CONNECTOR_BORDER.repeat(20));
+            table2.addCell(HORIZONTAL_CONNECTOR_BORDER.repeat(20));
+            table2.addCell(HORIZONTAL_CONNECTOR_BORDER.repeat(20));
+            table2.addCell(HORIZONTAL_CONNECTOR_BORDER.repeat(20));
+            table2.addCell(HORIZONTAL_CONNECTOR_BORDER.repeat(20));
+
+            table2.addCell(cyan + "  (W) Write");
+            table2.addCell(cyan + "  (R) Read (id)");
+            table2.addCell(cyan + "  (U) Update");
+            table2.addCell(cyan + "  (D) Delete");
+            table2.addCell(cyan + "  (S) Search (name)");
+            table2.addCell(cyan + "  (Se) Set rows");
+            table2.addCell(cyan + "  (Sa) Save");
+            table2.addCell(cyan + "  (Un) Unsaved");
+            table2.addCell(cyan + "  (Ba) Backup");
+            table2.addCell(cyan + "  (Re) Restore");
+            table2.addCell(cyan + "  (E)EXIT" + reset);
+
             System.out.println(table2.render());
 
             // Get user input for option selection
-            System.out.print("Choose Option: ");
+            System.out.print(blue + "Choose Option: " +reset);
             String option = sc.nextLine().trim().toLowerCase();
 
             switch (option) {
@@ -124,24 +143,27 @@ public class UI {
                     currentPage = totalPages - 1;
                     break;
                 case "g":
-                    System.out.print("Enter the page number you want to go to: ");
-                    String inputPage = sc.nextLine().trim();
-                    try {
-                        int pageNumber = Integer.parseInt(inputPage);
-                        if (pageNumber >= 1 && pageNumber <= totalPages) {
-                            currentPage = pageNumber - 1;
-                        } else {
-                            System.out.println(BoxBorder.red + "Invalid page number. Please enter a number between 1 and " + totalPages + "." + BoxBorder.reset);
+                    while (true) {
+                        System.out.print(blue + "Enter the page number you want to go to: " +reset);
+                        String inputPage = sc.nextLine().trim();
+                        try {
+                            int pageNumber = Integer.parseInt(inputPage);
+                            if (pageNumber >= 1 && pageNumber <= totalPages) {
+                                currentPage = pageNumber - 1;
+                                break;
+                            } else {
+                                System.out.println(red +"Invalid page number. Please enter a number between 1 and " + totalPages + "." +reset);
+                            }
+                        } catch (NumberFormatException e) {
+                            System.out.println(red + "Invalid input. Please enter a valid page number." + reset);
                         }
-                    } catch (NumberFormatException e) {
-                        System.out.println(BoxBorder.red + "Invalid input. Please enter a valid page number." + BoxBorder.reset);
                     }
                     break;
                 case "e":
                     System.out.print("\n\uD83E\uDD14 Are you sure you want to exit? (Y/N): ");
                     String confirmExit = sc.nextLine();
                     if (confirmExit.equalsIgnoreCase("Y")) {
-                        System.out.println("\uD83D\uDD1A Exiting the system. Thank You \uD83D\uDE0A❣\uFE0F");
+                        System.out.println(red + "\uD83D\uDD1A Exiting the system. Thank You \uD83D\uDE0A❣\uFE0F" +reset);
                         System.exit(0);
                     }
                     break;
@@ -149,6 +171,7 @@ public class UI {
                 // Product Operations
                 case "w":
                     // Write Operation (Jakriya)
+                    productController.addProduct(new Product());
                     break;
                 case "r":
                     // Read Operation (Makara)
@@ -157,12 +180,13 @@ public class UI {
                     break;
                 case "u":
                     // Update Operation (Try)
-
+                    productController.updateProduct(new Product());
                     break;
                 case "d":
                     // Delete Operation (Seyha)
                     DeleteProductByID();
                     listAllProduct();
+
 
                     break;
                 case "s":
@@ -176,9 +200,30 @@ public class UI {
                     break;
                 case "sa":
                     // Save Operation (Tra)
-
+                    String type;
+                    System.out.println(" 'si' for saving insert products and 'su' for saving update products or 'b' for back to menu");
+                    System.out.print("Enter option : ");
+                    type = sc.nextLine().trim().toLowerCase();
+                    if (type.equals("si")) {
+                        productController.saveProduct("add");
+                    } else if(type.equals( "su")){
+                        productController.saveProduct("update");
+                    }else if(type.equals("b")){
+                        break;
+                    }
                     break;
                 case "un":
+
+                    System.out.println("\n'ui' for saving insert products and 'uu' for saving update products or 'b' for back to menu");
+                    String types = ProductValidation.productNameValidation("option");
+                    if(types.equals("ui")){
+                        productController.displayProduct("insert");
+                    }else if(types.equals("uu")){
+                        productController.displayProduct("update");
+                    }else if(types.equals("b")){
+                        break;
+                    }
+
                     // Unsaved Operation (Tra)
 
                     break;
@@ -221,6 +266,12 @@ public class UI {
         // After setting the row successfully, list all products
         listAllProduct();
     }
+
+    // updateProduct
+    public static void updateProduct() {
+        productController.updateProduct(new Product());
+    }
+
     // search for products by id
     public static void searchById() {
         Scanner sc = new Scanner(System.in);
@@ -231,12 +282,12 @@ public class UI {
         Product product = productController.getProductById(id);
         if (product!= null) {
             Table table = new Table(5, BorderStyle.UNICODE_BOX_HEAVY_BORDER, ShownBorders.ALL);
-            table.addCell("GET PRODUCTS BY ID", new CellStyle(CellStyle.HorizontalAlign.CENTER), 5);
-            table.addCell("ID", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell("NAME", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell("UNIT PRICE", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell("QUANTITY", new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell("IMPORTED_DATE", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell(magenta + "GET PRODUCTS BY ID" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER), 5);
+            table.addCell(magenta + "ID" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell(magenta + "NAME" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell(magenta + "UNIT PRICE" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell(magenta + "QUANTITY" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell(magenta + "IMPORTED_DATE" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
 
             // Set column widths
             for (int i = 0; i < 5; i++) {
@@ -244,11 +295,11 @@ public class UI {
             }
 
             // Add product rows to the table
-            table.addCell(product.getId().toString(), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell(product.getName(), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell(String.valueOf(product.getUnitPrice()), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell(String.valueOf(product.getQuantity()), new CellStyle(CellStyle.HorizontalAlign.CENTER));
-            table.addCell(product.getImportedDate().toString(), new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell(blue + product.getId().toString() + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell(blue + product.getName()+ reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell(blue + String.valueOf(product.getUnitPrice())+ reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell(blue + String.valueOf(product.getQuantity())+ reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell(blue + product.getImportedDate().toString()+ reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
 
             // Render table
             System.out.println(table.render());
@@ -395,7 +446,7 @@ public class UI {
 
     // search for products by name
     public static void SearchProductByName() throws SQLException {
-        String name = ProductValidation.productNameValidation("Enter the product name to search: ");
+        String name = ProductValidation.productNameValidation("product name to search");
         productController.getProductByName(name);
     }
 //    delete for product

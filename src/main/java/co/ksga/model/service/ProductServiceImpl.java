@@ -4,8 +4,13 @@ package co.ksga.model.service;
 import co.ksga.exceptions.NotFoundException;
 import co.ksga.model.entity.Product;
 import co.ksga.utils.DBConnection;
+import co.ksga.utils.ProductValidation;
 import co.ksga.view.BoxBorder;
 import co.ksga.view.UI;
+import org.nocrala.tools.texttablefmt.BorderStyle;
+import org.nocrala.tools.texttablefmt.CellStyle;
+import org.nocrala.tools.texttablefmt.ShownBorders;
+import org.nocrala.tools.texttablefmt.Table;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -20,13 +25,45 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static co.ksga.view.BoxBorder.*;
+
 public class ProductServiceImpl implements ProductService {
+    ArrayList<Product> productUpdate = new ArrayList<>();
+    ArrayList<Product> productInsert = new ArrayList<>();
+
 
     static Scanner sc = new Scanner(System.in);
 
     @Override
-    public int writeProducts(Product product) {
-        return 0;
+    public void writeProducts(Product product) {
+        String sql = """
+                SELECT COUNT(*) AS total FROM products
+                """;
+        int id = 0;
+        try (
+                Connection connection = DBConnection.getConnection();
+                Statement statement = connection.createStatement();
+                ResultSet resultSet = statement.executeQuery(sql);
+        ) {
+            if (resultSet.next()) {
+                id = resultSet.getInt("total")+1;
+            }
+            System.out.println("ID: " + id);
+            String name = ProductValidation.productNameValidation("ProductName");
+            String price = ProductValidation.productPriceValidation("Price");
+            double finalprice = Double.parseDouble(price);
+            String quantity = ProductValidation.productPriceValidation("Quantity");
+            int finalquantity = Integer.parseInt(quantity);
+            LocalDate currentDate = LocalDate.now();
+            System.out.println("Enter to continue......");
+            sc.nextLine();
+            Product temp = new Product(id,name,finalprice,finalquantity,currentDate);
+            id++;
+            unsavedProduct(temp,"add");
+        } catch (SQLException sqlException) {
+            System.out.println("cannot get data " + sqlException.getSQLState());
+        }
+
     }
 
     @Override
@@ -35,7 +72,7 @@ public class ProductServiceImpl implements ProductService {
         String sql = """
                 SELECT * FROM products
                 """;
-        try(
+        try (
                 Connection connection = DBConnection.getConnection();
                 Statement statement = connection.createStatement();
                 ResultSet resultSet = statement.executeQuery(sql);
@@ -50,7 +87,7 @@ public class ProductServiceImpl implements ProductService {
                 products.add(product);
             }
 
-        }catch (SQLException sqlException){
+        } catch (SQLException sqlException) {
             System.out.println("cannot get data " + sqlException.getSQLState());
         }
         return products;
@@ -81,7 +118,7 @@ public class ProductServiceImpl implements ProductService {
                     product.setImportedDate(resultSet.getDate("imported_date").toLocalDate());
                 } else {
                     // Product not found
-                   throw new NotFoundException(BoxBorder.red+"not found product with id " + BoxBorder.reset+id);
+                    throw new NotFoundException(BoxBorder.red + "not found product with id " + reset + id);
                 }
             }
         } catch (SQLException e) {
@@ -93,21 +130,49 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ArrayList<Product> updateProduct(Product product, Integer id) {
-        ArrayList<Product> tepProducts = new ArrayList<>();
+    public void updateProduct(Product product) {
+        int id;
+        System.out.print("Enter ID : ");
+        id = sc.nextInt();
         String sql = "SELECT * FROM products WHERE id = " + id;
         try {
             Connection connection = DBConnection.getConnection();
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(sql);
             while (resultSet.next()) {
-                System.out.println("Name : " + resultSet.getString("name"));
-                System.out.println("Unit Price : " + resultSet.getDouble("unit_price"));
-                System.out.println("Quantity : " + resultSet.getInt("quantity"));
-                System.out.println("Imported Date : " + resultSet.getDate("imported_date").toLocalDate());
+                // id
+//                System.out.println("ID: " + resultSet.getInt("id"));
+//                System.out.println("Name : " + resultSet.getString("name"));
+//                System.out.println("Unit Price : " + resultSet.getDouble("unit_price"));
+//                System.out.println("Quantity : " + resultSet.getInt("quantity"));
+//                System.out.println("Imported Date : " + resultSet.getDate("imported_date").toLocalDate());
                 product.setName(resultSet.getString("Name"));
                 product.setUnitPrice(resultSet.getDouble("unit_price"));
                 product.setQuantity(resultSet.getInt("quantity"));
+
+                Table table = new Table(5, BorderStyle.UNICODE_BOX_HEAVY_BORDER, ShownBorders.ALL);
+                table.addCell(magenta + "UPDATE PRODUCTS BY ID" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER), 5);
+                table.addCell(magenta + "ID" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(magenta + "NAME" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(magenta + "UNIT PRICE" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(magenta + "QUANTITY" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(magenta + "IMPORTED_DATE" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+
+                // Set column widths
+                for (int i = 0; i < 5; i++) {
+                    table.setColumnWidth(i, 25, 25);
+                }
+
+                // Add product rows to the table
+                table.addCell(blue + resultSet.getInt("id") + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(blue + resultSet.getString("name")+ reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(blue + resultSet.getDouble("unit_price")+ reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(blue + resultSet.getInt("quantity")+ reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(blue + resultSet.getDate("imported_date").toLocalDate()+ reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+
+                // Render table
+                System.out.println(table.render());
+
             }
             int option;
             while (true) {
@@ -147,6 +212,7 @@ public class ProductServiceImpl implements ProductService {
                     System.out.println("Name: " + product.getName());
                     System.out.println("Unit Price: " + product.getUnitPrice());
                     System.out.println("Quantity: " + product.getQuantity());
+                    unsavedProduct(product,"update");
                     break;
                 }
             }
@@ -155,8 +221,6 @@ public class ProductServiceImpl implements ProductService {
         }
 
 
-        tepProducts.add(product);
-        return tepProducts;
     }
 
     @Override
@@ -178,12 +242,29 @@ public class ProductServiceImpl implements ProductService {
             if (!rs.next()) {
                 throw new NotFoundException("Product not found with ID: " + id);
             }
-            System.out.println("Product Details:");
-            System.out.println("ID: " + rs.getInt("id"));
-            System.out.println("Name: " + rs.getString("name"));
-            System.out.println("Unit Price: " + rs.getDouble("unit_price"));
-            System.out.println("Quantity: " + rs.getInt("quantity"));
-            System.out.println("Imported Date: " + rs.getDate("imported_date"));
+
+            Table table = new Table(5, BorderStyle.UNICODE_BOX_HEAVY_BORDER, ShownBorders.ALL);
+            table.addCell(magenta + "Product Details" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER), 5);
+            table.addCell(magenta + "ID" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell(magenta + "NAME" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell(magenta + "UNIT PRICE" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell(magenta + "QUANTITY" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell(magenta + "IMPORTED_DATE" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+
+            // Set column widths
+            for (int i = 0; i < 5; i++) {
+                table.setColumnWidth(i, 25, 25);
+            }
+
+            // Add product rows to the table
+            table.addCell(blue +  rs.getInt("id") + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell(blue + rs.getString("name")+ reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell(blue + rs.getDouble("unit_price")+ reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell(blue + rs.getInt("quantity")+ reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table.addCell(blue + rs.getDate("imported_date")+ reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+
+            // Render table
+            System.out.println(table.render());
 
             Scanner sc = new Scanner(System.in);
             while (true) {
@@ -219,65 +300,80 @@ public class ProductServiceImpl implements ProductService {
     }
 
 
+    @Override
+    public List<Product> searchProductsByName(String name) throws SQLException {
+        List<Product> productList = new ArrayList<>();
 
-
-@Override
-public List<Product> searchProductsByName(String name) throws SQLException {
-    List<Product> productList = new ArrayList<>();
-    Connection con = null;
-    PreparedStatement ps = null;
-    ResultSet rs = null;
-    try {
-        con = DBConnection.getConnection();
-        if (con == null) {
-            throw new SQLException("Failed to establish database connection");
-        }
         String sql = "SELECT * FROM products WHERE name LIKE ?";
-        ps = con.prepareStatement(sql);
 
-        //  (to prevent SQL injection)
-        ps.setString(1, "%" + name + "%");
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
 
-        rs = ps.executeQuery();
-
-        if (!rs.isBeforeFirst()) {
-            throw new NotFoundException(BoxBorder.red+"Product not found with name: "+BoxBorder.reset + name);
-        }
-        while (rs.next()) {
-            Product product = new Product();
-            product.setId(rs.getInt("id"));
-            product.setName(rs.getString("name"));
-            product.setUnitPrice(rs.getDouble("unit_price"));
-            product.setQuantity(rs.getInt("quantity"));
-
-            Date sqlDate = rs.getDate("imported_date");
-            if (sqlDate != null) {
-                product.setImportedDate(sqlDate.toLocalDate());
-            } else {
-                product.setImportedDate(null);
+            if (con == null) {
+                throw new SQLException("Failed to establish database connection");
             }
-            System.out.println("ID : " + product.getId());
-            System.out.println("Product Name: " + product.getName());
-            System.out.println("Product Price: " + product.getUnitPrice());
-            System.out.println("Product Quantity: " + product.getQuantity());
-            System.out.println("Product Date: " + product.getImportedDate());
-            productList.add(product);
+
+            ps.setString(1, "%" + name + "%");
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.isBeforeFirst()) {
+                    throw new NotFoundException(BoxBorder.red + "Product not found with name: " + reset + name);
+                }
+
+                while (rs.next()) {
+                    Product product = new Product();
+                    product.setId(rs.getInt("id"));
+                    product.setName(rs.getString("name"));
+                    product.setUnitPrice(rs.getDouble("unit_price"));
+                    product.setQuantity(rs.getInt("quantity"));
+
+                    Date sqlDate = rs.getDate("imported_date");
+                    product.setImportedDate(sqlDate != null ? sqlDate.toLocalDate() : null);
+
+                    productList.add(product);
+                }
+            }
         }
 
         if (productList.isEmpty()) {
             throw new NotFoundException("No products found with name: " + name);
         }
-    } catch (SQLException | RuntimeException e) {
-        System.out.println("Error occurred: " + e.getMessage());
-    } finally {
 
-        assert rs != null;
-        rs.close();
-        ps.close();
-        con.close();
+        // Display results using table
+        Table table3 = new Table(5, BorderStyle.UNICODE_BOX_HEAVY_BORDER, ShownBorders.ALL);
+
+        table3.addCell("PRODUCT SEARCH RESULT", new CellStyle(CellStyle.HorizontalAlign.CENTER), 5);
+        table3.addCell("ID", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+        table3.addCell("Product Name", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+        table3.addCell("Product Price", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+        table3.addCell("Product Quantity", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+        table3.addCell("Product Date", new CellStyle(CellStyle.HorizontalAlign.CENTER));
+
+        table3.setColumnWidth(0, 22, 30);
+        table3.setColumnWidth(1, 22, 30);
+        table3.setColumnWidth(2, 22, 30);
+        table3.setColumnWidth(3, 22, 30);
+        table3.setColumnWidth(4, 22, 30);
+//        table3.setColumnWidth(5, 22, 30);
+
+        String blue = "\u001B[34m"; // ANSI Blue color code
+        String reset = "\u001B[0m"; // Reset color
+
+        for (Product product : productList) {
+            table3.addCell(blue + product.getId() + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table3.addCell(blue + product.getName() + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table3.addCell(blue + String.valueOf(product.getUnitPrice()) + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table3.addCell(blue + String.valueOf(product.getQuantity()) + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            table3.addCell(blue + (product.getImportedDate() != null ? product.getImportedDate().toString() : "N/A") + reset,
+                    new CellStyle(CellStyle.HorizontalAlign.CENTER));
+        }
+
+        System.out.println(table3.render());
+        System.out.print("\nPress Enter to continue...");
+        sc.nextLine();
+
+        return productList;
     }
-    return productList;
-}
 
 
     @Override
@@ -328,15 +424,85 @@ public List<Product> searchProductsByName(String name) throws SQLException {
     }
 
     @Override
-    public Product saveProduct(Product product) {
-        return null;
+    public void saveProduct(String operation) {
+        LocalDate currentDate = LocalDate.now();
+        if (operation.equals("update")) {
+            String sqlUpdate = "UPDATE products SET name = ?, unit_price = ?, quantity = ? WHERE id = ?";
+            try (Connection connection = DBConnection.getConnection();
+                 PreparedStatement preparedStatement = connection.prepareStatement(sqlUpdate)) {
+                for (Product productUpdate : productUpdate) {
+                    preparedStatement.setString(1, productUpdate.getName());
+                    preparedStatement.setDouble(2, productUpdate.getUnitPrice());
+                    preparedStatement.setInt(3, productUpdate.getQuantity());
+                    preparedStatement.setInt(4, productUpdate.getId());
+                    preparedStatement.execute();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace(); // Handle properly in production code
+            }
+        } else if(operation.equals("add")){
+            String sqlInsert = "INSERT INTO products (name, unit_price, quantity, imported_date) VALUES (?, ?, ?,?)";
+            try (Connection connection = DBConnection.getConnection();
+                 PreparedStatement preparedStatement = connection.prepareStatement(sqlInsert)) {
+                for (Product productInsert : productInsert) {
+                    preparedStatement.setString(1, productInsert.getName());
+                    preparedStatement.setDouble(2, productInsert.getUnitPrice());
+                    preparedStatement.setInt(3, productInsert.getQuantity());
+                    preparedStatement.setDate(4, Date.valueOf(productInsert.getImportedDate().toString()));
+                    preparedStatement.execute();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace(); // Handle properly in production code
+            }
+        }
+
     }
 
     @Override
-    public void unsavedProduct(Product product) {
+    public void unsavedProduct(Product products, String operation) {
+        if (operation.equals("add")) {
+            productInsert.add(products);  // Changed to addAll since we're adding a list
+        } else if (operation.equals("update")) {
+            productUpdate.add(products);
+        }
+    }
+    @Override
+    public void displayProduct(String operation) {
+        Table table = new Table(5, BorderStyle.UNICODE_BOX_HEAVY_BORDER, ShownBorders.ALL);
+        table.addCell(magenta + "UPDATE PRODUCTS BY ID" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER), 5);
+        table.addCell(magenta + "ID" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+        table.addCell(magenta + "NAME" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+        table.addCell(magenta + "UNIT PRICE" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+        table.addCell(magenta + "QUANTITY" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+        table.addCell(magenta + "IMPORTED_DATE" + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+
+        // Set column widths
+        for (int i = 0; i < 5; i++) {
+            table.setColumnWidth(i, 25, 25);
+        }
+        if(operation.equals("insert")){
+            for (Product product : productInsert) {
+                // Add product rows to the table
+                table.addCell(blue + product.getId() +reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(blue + product.getName()  + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(blue + product.getUnitPrice() + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(blue + product.getQuantity() + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(blue + product.getImportedDate()+reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+            }
+        }else if(operation.equals("update")){
+            for (Product product : productUpdate) {
+                table.addCell(blue + product.getId() +reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(blue + product.getName()  + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(blue + product.getUnitPrice() + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(blue + product.getQuantity() + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+                table.addCell(blue + product.getImportedDate()+reset, new CellStyle(CellStyle.HorizontalAlign.CENTER));
+
+            }
+        }
+        // Render table
+        System.out.println(table.render());
 
     }
-
     @Override
     public boolean backupProducts(String backupDirectory) throws IOException, SQLException {
         String dbUser = "postgres", dbPassword = "seyha", dbName = "stockmanagement";

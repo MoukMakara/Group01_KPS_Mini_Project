@@ -62,7 +62,7 @@ public class UI {
             }
 
             // Pagination and total records info
-            table.addCell(green + "PAGE NUMBER : " + reset + yellow + (currentPage + 1) +reset + green + " of " + totalPages + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER), 2);
+            table.addCell(green + "PAGE NUMBER : " + reset + yellow + (currentPage + 1) +reset + green + " of " +reset + red + totalPages + reset, new CellStyle(CellStyle.HorizontalAlign.CENTER), 2);
             table.addCell(green + "TOTAL RECORD" + reset + " : " + darkRed + products.size() +reset, new CellStyle(CellStyle.HorizontalAlign.CENTER), 3);
 
             // Render table
@@ -114,7 +114,7 @@ public class UI {
             System.out.println(table2.render());
 
             // Get user input for option selection
-            System.out.print("Choose Option: ");
+            System.out.print(blue + "Choose Option: " +reset);
             String option = sc.nextLine().trim().toLowerCase();
 
             switch (option) {
@@ -137,7 +137,7 @@ public class UI {
                     break;
                 case "g":
                     while (true) {
-                        System.out.print("Enter the page number you want to go to: ");
+                        System.out.print(blue + "Enter the page number you want to go to: " +reset);
                         String inputPage = sc.nextLine().trim();
                         try {
                             int pageNumber = Integer.parseInt(inputPage);
@@ -145,10 +145,10 @@ public class UI {
                                 currentPage = pageNumber - 1;
                                 break;
                             } else {
-                                System.out.println("Invalid page number. Please enter a number between 1 and " + totalPages + ".");
+                                System.out.println(red +"Invalid page number. Please enter a number between 1 and " + totalPages + "." +reset);
                             }
                         } catch (NumberFormatException e) {
-                            System.out.println("Invalid input. Please enter a valid page number.");
+                            System.out.println(red + "Invalid input. Please enter a valid page number." + reset);
                         }
                     }
                     break;
@@ -156,7 +156,7 @@ public class UI {
                     System.out.print("\n\uD83E\uDD14 Are you sure you want to exit? (Y/N): ");
                     String confirmExit = sc.nextLine();
                     if (confirmExit.equalsIgnoreCase("Y")) {
-                        System.out.println("\uD83D\uDD1A Exiting the system. Thank You \uD83D\uDE0A❣\uFE0F");
+                        System.out.println(red + "\uD83D\uDD1A Exiting the system. Thank You \uD83D\uDE0A❣\uFE0F" +reset);
                         System.exit(0);
                     }
                     break;

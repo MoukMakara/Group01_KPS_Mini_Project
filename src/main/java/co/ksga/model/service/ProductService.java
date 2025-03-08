@@ -4,6 +4,7 @@ import co.ksga.model.entity.Product;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 public interface ProductService {
@@ -17,7 +18,7 @@ public interface ProductService {
     Product readProductById(Integer id);
 
     //4. Update
-    int updateProduct(Product product, Integer id);
+    ArrayList<Product> updateProduct(Product product, Integer id);
 
     //5. Delete Product
     int deleteProduct(Integer id);

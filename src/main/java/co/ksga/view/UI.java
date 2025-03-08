@@ -147,12 +147,15 @@ public class UI {
                     break;
                 case "u":
                     // Update Operation (Try)
+
                     break;
                 case "d":
                     // Delete Operation (Seyha)
+
                     break;
                 case "s":
                     // Search Operation (Seyha)
+
                     break;
                 case "se":
                     // Set Rows
@@ -160,15 +163,19 @@ public class UI {
                     break;
                 case "sa":
                     // Save Operation (Tra)
+
                     break;
                 case "un":
                     // Unsaved Operation (Tra)
+
                     break;
                 case "ba":
                     // Backup Operation (Kim Long)
+
                     break;
                 case "re":
                     // Restore Operation (Sreyphea)
+
                     break;
                 default:
                     System.out.println("❌ Invalid choice, please choose a valid option.");

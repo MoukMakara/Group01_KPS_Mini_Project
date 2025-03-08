@@ -7,6 +7,7 @@ import co.ksga.model.service.ProductServiceImpl;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ProductController {
@@ -25,7 +26,7 @@ public class ProductController {
         return productService.readProductById(id);
     }
     //4. Update
-    public int updateProduct(Product product, Integer id) {
+    public ArrayList<Product> updateProduct(Product product, Integer id) {
         return productService.updateProduct(product, id);
     }
     //5. Delete Product
